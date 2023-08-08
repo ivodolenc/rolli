@@ -1,0 +1,65 @@
+{
+  "name": "rolli",
+  "version": "0.0.1",
+  "author": "Ivo Dolenc",
+  "description": "A zero-config module bundler.",
+  "license": "MIT",
+  "repository": "ivodolenc/rolli",
+  "homepage": "https://github.com/ivodolenc/rolli",
+  "funding": "https://github.com/sponsors/ivodolenc",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./cli": {
+      "import": "./dist/cli/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "javascript",
+    "typescript",
+    "bundler",
+    "builder",
+    "module",
+    "bundle",
+    "types",
+    "build",
+    "esm"
+  ],
+  "bin": {
+    "rolli": "./dist/cli.mjs"
+  },
+  "scripts": {
+    "dev": "vite-node -w playground/main.ts",
+    "build": "rollup -c .config/rollup.config.js",
+    "lint": "ESLINT_USE_FLAT_CONFIG=true eslint -c .config/eslint.config.js .",
+    "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint -c .config/eslint.config.js --fix .",
+    "format": "prettier --config .config/prettier.config.js --write .",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@rollup/plugin-replace": "^5.0.2",
+    "colorate": "^0.1.1",
+    "esbuild": "^0.18.19",
+    "mri": "^1.2.0",
+    "rollup": "^3.27.2",
+    "rollup-plugin-dts": "^5.3.1",
+    "rollup-plugin-esbuild": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.8",
+    "configshare": "^0.1.2",
+    "eslint": "^8.46.0",
+    "prettier": "^3.0.1",
+    "typescript": "^5.0.4",
+    "vite-node": "^0.34.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

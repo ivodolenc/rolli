@@ -1,0 +1,17 @@
+.DS_Store
+node_modules
+*-lock.*
+*.lock
+*.log*
+*.min.*
+*.d.ts
+.git
+.private
+.cache
+.env*
+dist
+output
+out
+coverage
+temp
+cache
