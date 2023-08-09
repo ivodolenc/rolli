@@ -9,4 +9,9 @@ export interface ConfigLoader extends RolliOptions {
       require?: string
     }
   }
+  bin?:
+    | string
+    | {
+        [key: string]: string
+      }
 }

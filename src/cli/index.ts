@@ -1,32 +1,30 @@
 #!/usr/bin/env node
 
 import mri from 'mri'
-import { cl, cyan } from 'colorate'
-import { createBundle, logBundleStats } from './bundle.js'
+import { cl, n } from 'colorate'
+import { createBuilder } from './builder.js'
+import { version } from './meta.js'
 import { logger } from '../utils/logger.js'
 import { error } from '../utils/error.js'
+import { createConfigLoader } from './loader.js'
 import { nodeWarningsPatch } from '../utils/node.js'
-import type { ConfigLoader } from '../types/cli/index.js'
 
 async function main() {
   const rootDir = process.cwd()
   const args = mri(process.argv.splice(2))
-  let config!: ConfigLoader
-  const start = Date.now()
 
-  logger.start()
+  const config = await createConfigLoader(rootDir, args)
+  if (!config) return logger.notFound('Configuration not found.')
 
-  await createBundle(rootDir, args)
-    .then((res) => {
-      config = res
-      const end = Date.now()
+  if (args['print-config']) {
+    cl()
+    logger.cyan(version)
+    logger.cyan('Current Configuration:')
 
-      logger.cyan(`⚡️ Bundling done in ` + cyan(`${end - start}ms`))
-      cl()
-    })
-    .catch(error)
+    return cl(config, n)
+  }
 
-  await logBundleStats(rootDir, config)
+  await createBuilder(rootDir, config).catch(error)
 }
 
 nodeWarningsPatch()

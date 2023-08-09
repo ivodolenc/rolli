@@ -12,17 +12,20 @@ async function parseConfig(filePath: string, pkg: any) {
   const { ext, base } = parse(filePath)
   const notFound = () => logger.notFound('Config file not found.')
 
+  const externals = [
+    ...defaultExternals,
+    ...Object.keys(pkg.dependencies || {}),
+  ]
+
   if (ext === '.js') {
     const js = await import(filePath).catch(notFound)
 
     const config: ConfigLoader = {
       ...defaults,
       type: base,
-      exports: pkg['exports'],
-      externals: [
-        ...defaultExternals,
-        ...Object.keys(pkg['dependencies'] || {}),
-      ],
+      exports: pkg.exports,
+      bin: pkg.bin,
+      externals,
       ...js.default,
     }
 
@@ -37,11 +40,9 @@ async function parseConfig(filePath: string, pkg: any) {
     const config: ConfigLoader = {
       ...defaults,
       type: base,
-      exports: pkg['exports'],
-      externals: [
-        ...defaultExternals,
-        ...Object.keys(pkg['dependencies'] || {}),
-      ],
+      exports: pkg.exports,
+      bin: pkg.bin,
+      externals,
       ...ts.default,
     }
 
@@ -55,44 +56,41 @@ export async function createConfigLoader(rootDir: string, args: ArgsOptions) {
   const pathTs = resolve(rootDir, 'rolli.config.ts')
   const pathCustom = args.c ? resolve(rootDir, args.c) : undefined
 
-  const filePkg = await exists(pathPkg)
   const fileJs = await exists(pathJs)
   const fileTs = await exists(pathTs)
-  const fileCustom = args.c
-  let pkg: any = {}
+  const fileCustom = pathCustom
 
-  if (filePkg) {
-    const pkgJson = await import(pathPkg, { assert: { type: 'json' } })
-    pkg = pkgJson.default
+  const pkgJson = await import(pathPkg, { assert: { type: 'json' } })
+  const pkg = pkgJson.default
 
-    if (pkg['exports'] && !pkg['rolli'] && !fileJs && !fileTs && !fileCustom) {
-      const config: ConfigLoader = {
-        ...defaults,
-        type: 'auto',
-        exports: pkg['exports'],
-        externals: [
-          ...defaultExternals,
-          ...Object.keys(pkg['dependencies'] || {}),
-        ],
-      }
+  const externals = [
+    ...defaultExternals,
+    ...Object.keys(pkg.dependencies || {}),
+  ]
 
-      return config
+  if (pkg.exports && !pkg.rolli && !fileJs && !fileTs && !fileCustom) {
+    const config: ConfigLoader = {
+      ...defaults,
+      type: 'auto',
+      exports: pkg.exports,
+      bin: pkg.bin,
+      externals,
     }
 
-    if (pkg['rolli'] && !fileJs && !fileTs && !fileCustom) {
-      const config: ConfigLoader = {
-        ...defaults,
-        type: 'package.json',
-        exports: pkg['exports'],
-        externals: [
-          ...defaultExternals,
-          ...Object.keys(pkg['dependencies'] || {}),
-        ],
-        ...pkg['rolli'],
-      }
+    return config
+  }
 
-      return config
+  if (pkg.rolli && !fileJs && !fileTs && !fileCustom) {
+    const config: ConfigLoader = {
+      ...defaults,
+      type: 'package.json',
+      exports: pkg.exports,
+      bin: pkg.bin,
+      externals,
+      ...pkg.rolli,
     }
+
+    return config
   }
 
   if (fileJs && !fileTs && !fileCustom) return await parseConfig(pathJs, pkg)
@@ -100,5 +98,5 @@ export async function createConfigLoader(rootDir: string, args: ArgsOptions) {
   if (fileTs && !fileJs && !fileCustom) return await parseConfig(pathTs, pkg)
 
   if (fileCustom && !fileJs && !fileTs)
-    return await parseConfig(pathCustom as string, pkg)
+    return await parseConfig(pathCustom, pkg)
 }
