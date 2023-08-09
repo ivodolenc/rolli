@@ -11,11 +11,9 @@ const onLog = (level, log, handler) => {
 }
 
 const external = [...Object.keys(pkg.dependencies), /node:/, /rollup/]
-const tsconfig = './node_modules/configshare/tsconfig.json'
 
 const exports = {
   main: pkg.exports['.'],
-  cli: pkg.exports['./cli'],
 }
 
 const replaceOptions = {
@@ -28,19 +26,17 @@ export default defineConfig([
   {
     input: './src/index.ts',
     output: [{ file: exports.main.import, format: 'esm' }],
-    plugins: [esbuild({ tsconfig })],
+    plugins: [esbuild()],
     external,
   },
   {
     input: './src/cli/index.ts',
-    output: [
-      {
-        file: exports.cli.import,
-        format: 'esm',
-        banner: '#!/usr/bin/env node',
-      },
-    ],
-    plugins: [replace(replaceOptions), esbuild({ tsconfig })],
+    output: {
+      file: './dist/cli/index.mjs',
+      format: 'esm',
+      banner: '#!/usr/bin/env node',
+    },
+    plugins: [replace(replaceOptions), esbuild()],
     external,
   },
   {
