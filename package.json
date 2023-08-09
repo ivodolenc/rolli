@@ -12,9 +12,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
-    },
-    "./cli": {
-      "import": "./dist/cli/index.mjs"
     }
   },
   "files": [
@@ -29,10 +26,11 @@
     "bundle",
     "types",
     "build",
-    "esm"
+    "esm",
+    "dts"
   ],
   "bin": {
-    "rolli": "./dist/cli.mjs"
+    "rolli": "./dist/cli/index.mjs"
   },
   "scripts": {
     "dev": "vite-node -w playground/main.ts",
@@ -45,14 +43,14 @@
   "dependencies": {
     "@rollup/plugin-replace": "^5.0.2",
     "colorate": "^0.1.1",
-    "esbuild": "^0.18.19",
+    "esbuild": "^0.19.0",
     "mri": "^1.2.0",
-    "rollup": "^3.27.2",
+    "rollup": "^3.28.0",
     "rollup-plugin-dts": "^5.3.1",
     "rollup-plugin-esbuild": "^5.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.4.8",
+    "@types/node": "^20.4.9",
     "configshare": "^0.1.2",
     "eslint": "^8.46.0",
     "prettier": "^3.0.1",
