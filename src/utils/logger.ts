@@ -1,5 +1,6 @@
 import { cl, bold, cyan, lime, yellow, red, darken } from 'colorate'
 import { formatBytes } from './format-bytes.js'
+import { formatMs } from './format-ms.js'
 import { name, version } from '../cli/meta.js'
 
 export const logger = {
@@ -17,18 +18,28 @@ export const logger = {
   output: (ext: string, v: string, size: number) => {
     cl(cyan('> ') + ext, darken(v), '→', lime(formatBytes(size)))
   },
-  end: (bundleStats: {
-    time: number
-    files: number
-    suffix: string
-    size: number
-  }) => {
-    const { time, files, suffix, size } = bundleStats
+  end: (bundleStats: { time: number; files: number; size: number }) => {
+    const { time, files, size } = bundleStats
+
+    const suffix = files > 1 ? ' files' : ' file'
     const stats = lime(`${files}${suffix}, ${formatBytes(size)}`)
 
     cl()
-    cl(bold(lime(name)), `⚡️ Bundling done in ` + cyan(`${time}ms`))
+    cl(bold(cyan(name)), `⚡️ Bundling done in ` + cyan(formatMs(time)))
     cl(bold(lime(name)), `📦 Bundle stats: ${stats}`)
+    cl()
+  },
+  printConfig: () => {
+    const time = new Date().toLocaleTimeString()
+
+    cl()
+    cl(bold(cyan(name)), version)
+    cl()
+    cl(
+      `${darken('[' + time + ']')} ⚙️  CONFIGURATION ${cyan(
+        '[--print-config]',
+      )}`,
+    )
     cl()
   },
   notFound: (v: string) => {
