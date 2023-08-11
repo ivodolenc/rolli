@@ -21,9 +21,11 @@ npm i -D rolli
 
 ## Intro
 
-**Rolli** allows you to easily bundle your projects with _zero-config_ setup by extending the latest Rollup features and powerful plugins.
+**Rolli** allows you to easily bundle your projects with _zero-config_ setup by extending the latest [Rollup](https://github.com/rollup/rollup) features and powerful plugins.
 
-It automatically detects your options and infers build entries from the _exports_ object, so in most cases all you need is a basic npm package setup.
+It automatically detects your options and infers build entries, so in most cases all you need is a basic npm package setup.
+
+Also, it's possible to fully customize all aspects of the build setup as needed.
 
 ## Quick Start
 
@@ -32,24 +34,30 @@ It automatically detects your options and infers build entries from the _exports
 ```js
 {
   "type": "module",
+  // Build entries (outputs match inputs)
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts", // matches the input './src/types/index.ts'
       "import": "./dist/index.mjs", // matches the input './src/index.{js,ts}'
-      "require": "./dist/index.cjs" // matches the input './src/index.{js,ts}'
+      "require": "./dist/index.cjs", // matches the input './src/index.{js,ts}'
     },
     "./path": {
       "types": "./dist/types/path/index.d.ts", // matches the input './src/types/path/index.ts'
       "import": "./dist/path/index.mjs", // matches the input './src/path/index.{js,ts}'
-      "require": "./dist/path/index.cjs" // matches the input './src/path/index.{js,ts}'
+      "require": "./dist/path/index.cjs", // matches the input './src/path/index.{js,ts}'
     },
     // ...
   },
+  // Node hashbangs (optional)
+  "bin": {
+    "command": "./dist/cli/index.mjs", // matches the input './src/cli/index.{js,ts}'
+    // ...
+  }
 }
 ```
 
 > [!NOTE]\
-> Output paths from `./dist` dir automatically match input paths from `./src` dir.
+> Output paths from the `./dist` dir automatically match input paths from the `./src` dir.
 
 2. When you're ready to build, simply run the command:
 
