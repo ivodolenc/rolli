@@ -42,6 +42,12 @@ async function logOutputStat(rootDir: string, value: string) {
   return logger.output(ext, value, outputStat.size)
 }
 
+function isExtAllowed(value: string) {
+  const outputExtensions = ['.js', '.mjs', '.cjs']
+
+  return outputExtensions.some((ext) => value.endsWith(ext))
+}
+
 export async function createBuilder(rootDir: string, config: ConfigLoader) {
   const {
     exports,
@@ -86,7 +92,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
 
   if (exports) {
     for (const value of Object.values(exports)) {
-      if (isString(value)) {
+      if (isString(value) && isExtAllowed(value)) {
         bundleStats.files++
 
         let format: ModuleFormat = 'esm'
@@ -105,7 +111,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
       }
 
       if (isObject(value)) {
-        if (value.import) {
+        if (value.import && isExtAllowed(value.import)) {
           bundleStats.files++
 
           const input = await getInputPath(value.import)
@@ -120,7 +126,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
           await logOutputStat(rootDir, value.import)
         }
 
-        if (value.require) {
+        if (value.require && isExtAllowed(value.require)) {
           bundleStats.files++
 
           const input = await getInputPath(value.require)
@@ -135,7 +141,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
           await logOutputStat(rootDir, value.require)
         }
 
-        if (value.types) {
+        if (value.types && value.types.endsWith('.d.ts')) {
           bundleStats.files++
 
           const inputDir = value.types.split('/')[1]
@@ -157,7 +163,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
     }
   }
 
-  if (isString(bin)) {
+  if (isString(bin) && isExtAllowed(bin)) {
     bundleStats.files++
 
     let format: ModuleFormat = 'esm'
@@ -178,22 +184,24 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
 
   if (isObject(bin)) {
     for (const value of Object.values(bin)) {
-      bundleStats.files++
+      if (isExtAllowed(value)) {
+        bundleStats.files++
 
-      let format: ModuleFormat = 'esm'
-      if (value.endsWith('.cjs')) format = 'cjs'
+        let format: ModuleFormat = 'esm'
+        if (value.endsWith('.cjs')) format = 'cjs'
 
-      const input = await getInputPath(value)
-      const builder = await rollup({
-        input: resolve(rootDir, input),
-        ...builderOptions,
-      })
-      await builder.write({
-        file: resolve(rootDir, value),
-        format,
-        banner: '#!/usr/bin/env node',
-      })
-      await logOutputStat(rootDir, value)
+        const input = await getInputPath(value)
+        const builder = await rollup({
+          input: resolve(rootDir, input),
+          ...builderOptions,
+        })
+        await builder.write({
+          file: resolve(rootDir, value),
+          format,
+          banner: '#!/usr/bin/env node',
+        })
+        await logOutputStat(rootDir, value)
+      }
     }
   }
 
@@ -223,11 +231,11 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
 
       const format = value.format || 'esm'
 
-      if (!value.output.endsWith('.d.ts')) {
+      if (value.output.endsWith('.d.ts')) {
         const builder = await rollup({
           input: resolve(rootDir, value.input),
           external: external || value.externals,
-          ...entriesPlugins,
+          plugins: [dts(value.dts)],
         })
         await builder.write({
           file: resolve(rootDir, value.output),
@@ -235,13 +243,11 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
           banner: value.banner,
           footer: value.footer,
         })
-      }
-
-      if (value.output.endsWith('.d.ts')) {
+      } else {
         const builder = await rollup({
           input: resolve(rootDir, value.input),
           external: external || value.externals,
-          plugins: [dts(value.dts)],
+          ...entriesPlugins,
         })
         await builder.write({
           file: resolve(rootDir, value.output),
