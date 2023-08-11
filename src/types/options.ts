@@ -1,18 +1,37 @@
-import type { InputOptions, OutputOptions } from 'rollup'
+import type { InputOptions, OutputOptions, ModuleFormat } from 'rollup'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
+import type { RollupJsonOptions } from '@rollup/plugin-json'
+import type { RollupNodeResolveOptions } from '@rollup/plugin-node-resolve'
 import type { Options as EsbuildOptions } from 'rollup-plugin-esbuild'
 import type { Options as DtsOptions } from 'rollup-plugin-dts'
 
-interface EntriesOptions extends InputOptions {
+interface RollupOptions extends InputOptions {
   output: OutputOptions[]
 }
 
-export interface RolliOptions {
-  outDir?: string
-  entries?: EntriesOptions[]
-  logFilter?: string[]
+interface EntriesOptions {
+  input: string
+  output: string
+  format?: ModuleFormat
   externals?: (string | RegExp)[]
-  esbuild?: EsbuildOptions
+  banner?: OutputOptions['banner']
+  footer?: OutputOptions['footer']
   replace?: RollupReplaceOptions
+  json?: RollupJsonOptions | true
+  resolve?: RollupNodeResolveOptions | true
+  esbuild?: EsbuildOptions
+  dts?: DtsOptions
+}
+
+export interface RolliOptions {
+  exports?: false
+  bin?: false
+  externals?: (string | RegExp)[]
+  entries?: EntriesOptions[]
+  rollup?: RollupOptions[]
+  replace?: RollupReplaceOptions
+  json?: RollupJsonOptions | true
+  resolve?: RollupNodeResolveOptions | true
+  esbuild?: EsbuildOptions
   dts?: DtsOptions
 }

@@ -1,6 +1,6 @@
 import type { RolliOptions } from '../options.js'
 
-export interface ConfigLoader extends RolliOptions {
+export interface ConfigLoader extends Omit<RolliOptions, 'exports' | 'bin'> {
   type: string
   exports: {
     [key: string]: {
@@ -14,4 +14,5 @@ export interface ConfigLoader extends RolliOptions {
     | {
         [key: string]: string
       }
+    | false
 }
