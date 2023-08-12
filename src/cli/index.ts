@@ -11,7 +11,7 @@ import { nodePatch } from '../utils/node.js'
 
 async function main() {
   const rootDir = process.cwd()
-  const args = mri(process.argv.splice(2))
+  const args = mri(process.argv.splice(2), { alias: { c: 'config' } })
 
   if (args.h || args.help) return logHelpDetails()
 
