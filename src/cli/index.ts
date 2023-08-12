@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import mri from 'mri'
 import { cl, n } from 'colorate'
 import { logHelpDetails } from './help.js'
@@ -11,10 +13,10 @@ async function main() {
   const rootDir = process.cwd()
   const args = mri(process.argv.splice(2))
 
+  if (args.h || args.help) return logHelpDetails()
+
   const config = await createConfigLoader(rootDir, args)
   if (!config) return logger.notFound('Configuration not found.')
-
-  if (args.h || args.help) return logHelpDetails()
 
   if (args['print-config']) {
     logger.printConfig()

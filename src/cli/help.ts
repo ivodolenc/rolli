@@ -10,12 +10,17 @@ export function logHelpDetails() {
   cl(`LIST OF AVAILABLE COMMANDS 📟`, n)
 
   command({
+    flags: '[--print-config]',
+    description: `Prints the current configuration in the terminal.`,
+  })
+
+  command({
     flags: '[-c] [my.config.js]',
     description: `Sets a custom configuration for Rolli.`,
   })
 
   command({
-    flags: '[--print-config]',
-    description: `Prints the current configuration in the terminal.`,
+    flags: '[--minify]',
+    description: `Minifies bundle assets for production.`,
   })
 }

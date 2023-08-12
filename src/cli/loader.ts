@@ -3,24 +3,15 @@ import { exists } from '../utils/fs.js'
 import { error } from '../utils/error.js'
 import type { ArgsOptions, ConfigLoader } from '../types/cli/index.js'
 
-const defaultExternals = [/node:/, /rollup/, /types/]
-
-async function parseConfig(filePath: string, pkg: any) {
+async function parseConfig(filePath: string, defaults: ConfigLoader) {
   const { ext, base } = parse(filePath)
-
-  const externals = [
-    ...defaultExternals,
-    ...Object.keys(pkg.dependencies || {}),
-  ]
 
   if (ext === '.js') {
     const js = await import(filePath).catch(error)
 
     const config: ConfigLoader = {
+      ...defaults,
       type: base,
-      exports: pkg.exports,
-      bin: pkg.bin,
-      externals,
       ...js.default,
     }
 
@@ -30,43 +21,46 @@ async function parseConfig(filePath: string, pkg: any) {
 
 export async function createConfigLoader(rootDir: string, args: ArgsOptions) {
   const pathPkg = resolve(rootDir, 'package.json')
-  const pathJs = resolve(rootDir, 'rolli.config.js')
-  const pathCustom = args.c ? resolve(rootDir, args.c) : undefined
+  const { default: pkg } = await import(pathPkg, {
+    assert: { type: 'json' },
+  }).catch(error)
+  const { exports, bin, dependencies, rolli } = pkg
 
+  let minify: object | undefined = undefined
+  if (args.minify) minify = { esbuild: { minify: true } }
+
+  const pathCustom = args.c ? resolve(rootDir, args.c) : undefined
+  const pathJs = resolve(rootDir, 'rolli.config.js')
   const fileJs = await exists(pathJs)
 
-  const pkgJson = await import(pathPkg, { assert: { type: 'json' } })
-  const pkg = pkgJson.default
+  const defaults: ConfigLoader = {
+    type: 'auto',
+    exports,
+    bin,
+    externals: [/node:/, /rollup/, /types/, ...Object.keys(dependencies || {})],
+    ...minify,
+  }
 
-  const externals = [
-    ...defaultExternals,
-    ...Object.keys(pkg.dependencies || {}),
-  ]
-
-  if (pkg.exports && !pkg.rolli && !fileJs && !pathCustom) {
+  if (exports && !rolli && !fileJs && !pathCustom) {
     const config: ConfigLoader = {
+      ...defaults,
       type: 'auto',
-      exports: pkg.exports,
-      bin: pkg.bin,
-      externals,
     }
 
     return config
   }
 
-  if (pkg.rolli && !fileJs && !pathCustom) {
+  if (rolli && !fileJs && !pathCustom) {
     const config: ConfigLoader = {
+      ...defaults,
       type: 'package.json',
-      exports: pkg.exports,
-      bin: pkg.bin,
-      externals,
       ...pkg.rolli,
     }
 
     return config
   }
 
-  if (fileJs && !pathCustom) return await parseConfig(pathJs, pkg)
+  if (fileJs && !pathCustom) return await parseConfig(pathJs, defaults)
 
-  if (pathCustom && !fileJs) return await parseConfig(pathCustom, pkg)
+  if (pathCustom && !fileJs) return await parseConfig(pathCustom, defaults)
 }
