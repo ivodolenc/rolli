@@ -44,14 +44,14 @@
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-replace": "^5.0.2",
     "colorate": "^0.1.1",
-    "esbuild": "^0.19.1",
+    "esbuild": "^0.19.2",
     "mri": "^1.2.0",
     "rollup": "^3.28.0",
     "rollup-plugin-dts": "^5.3.1",
     "rollup-plugin-esbuild": "^5.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.4.10",
+    "@types/node": "^20.5.0",
     "configshare": "^0.1.2",
     "eslint": "^8.47.0",
     "prettier": "^3.0.1",
