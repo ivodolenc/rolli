@@ -65,7 +65,51 @@ Also, it's possible to fully customize all aspects of the build setup as needed.
 npx rolli
 ```
 
-That's it.
+That's it!
+
+## Customization
+
+By default, **Rolli** has an integrated _auto-build_ setup mode that already covers most cases, but if needed, it can be fully customized to match specific requirements.
+
+Rolli automatically detects custom configuration via the `rolli` object inside `package.json` or loads it from a separate `rolli.config.js` file.
+
+### Config
+
+The `rolli.config.js` file is located at the project's root and can override or extend the bundler's behavior.
+
+All [options](./src/types/options.ts) are optional, so you only have to specify what you’d like to change and the rest will fall back to the defaults.
+
+```js
+// rolli.config.js
+
+import { defineConfig } from 'rolli'
+
+export default defineConfig({
+  // ...
+})
+```
+
+Another way is to specify the `rolli` object in the `package.json` file.
+
+This can be useful for simple static data, but note that the _.json_ format is not compatible with dynamic configuration like the _.js_ format.
+
+```js
+// package.json
+
+{
+  "rolli": {
+    // ...
+  }
+}
+```
+
+### Custom path
+
+Also, it is possible to set a custom config path via the cli command:
+
+```sh
+npx rolli --config my.config.js
+```
 
 ## CLI
 
