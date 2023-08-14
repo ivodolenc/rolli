@@ -24,6 +24,7 @@ interface EntriesOptions {
 }
 
 export interface RolliOptions {
+  srcDir?: string
   exports?: false
   bin?: false
   externals?: (string | RegExp)[]

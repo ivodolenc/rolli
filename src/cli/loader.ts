@@ -34,6 +34,7 @@ export async function createConfigLoader(rootDir: string, args: ArgsOptions) {
   const fileJs = await exists(pathJs)
 
   const defaults: ConfigLoader = {
+    srcDir: 'src',
     type: 'auto',
     exports,
     bin,

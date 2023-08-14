@@ -22,9 +22,9 @@ let bundleStats = {
   files: 0,
 }
 
-async function getInputPath(value: string) {
+async function getInputPath(srcDir: string, value: string) {
   const outputDir = value.split('/')[1]
-  const inputDir = value.replace(outputDir, 'src')
+  const inputDir = value.replace(outputDir, srcDir)
   const inputJs = inputDir.replace(parse(inputDir).ext, '.js')
   const inputTs = inputDir.replace(parse(inputDir).ext, '.ts')
   const fileJs = await exists(inputJs)
@@ -55,6 +55,7 @@ function isExtAllowed(value: string) {
 
 export async function createBuilder(rootDir: string, config: ConfigLoader) {
   const {
+    srcDir,
     exports,
     bin,
     entries,
@@ -101,7 +102,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
         let format: ModuleFormat = 'esm'
         if (output.endsWith('.cjs')) format = 'cjs'
 
-        const input = await getInputPath(output)
+        const input = await getInputPath(srcDir, output)
         const builder = await rollup({
           input: resolve(rootDir, input),
           ...builderOptions,
@@ -122,7 +123,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
 
           let pluginLog: PluginLog | undefined
           const output = value.import
-          const input = await getInputPath(output)
+          const input = await getInputPath(srcDir, output)
           const builder = await rollup({
             input: resolve(rootDir, input),
             ...builderOptions,
@@ -142,7 +143,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
 
           let pluginLog: PluginLog | undefined
           const output = value.require
-          const input = await getInputPath(output)
+          const input = await getInputPath(srcDir, output)
           const builder = await rollup({
             input: resolve(rootDir, input),
             ...builderOptions,
@@ -190,7 +191,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
     let format: ModuleFormat = 'esm'
     if (output.endsWith('.cjs')) format = 'cjs'
 
-    const input = await getInputPath(output)
+    const input = await getInputPath(srcDir, output)
     const builder = await rollup({
       input: resolve(rootDir, input),
       ...builderOptions,
@@ -216,7 +217,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
         let format: ModuleFormat = 'esm'
         if (output.endsWith('.cjs')) format = 'cjs'
 
-        const input = await getInputPath(output)
+        const input = await getInputPath(srcDir, output)
         const builder = await rollup({
           input: resolve(rootDir, input),
           ...builderOptions,
