@@ -33,7 +33,7 @@ export const logger = {
   end: (bundleStats: { time: number; files: number; size: number }) => {
     const { time, files, size } = bundleStats
 
-    const suffix = files > 1 ? ' files' : ' file'
+    const suffix = files === 1 ? ' file' : ' files'
     const stats = lime(`${files}${suffix}, ${formatBytes(size)}`)
 
     cl()
@@ -43,20 +43,18 @@ export const logger = {
   },
   printConfig: () => {
     const time = new Date().toLocaleTimeString()
+    const flag = cyan('[--print-config]')
 
     cl()
     cl(bold(cyan(name)), version)
-    cl()
-    cl(
-      `${darken('[' + time + ']')} ⚙️  CONFIGURATION ${cyan(
-        '[--print-config]',
-      )}`,
-    )
+    cl(bold(cyan(name)), `${darken('[' + time + ']')} ⚙️  CONFIGURATION`, flag)
     cl()
   },
   notFound: (v: string) => {
+    const time = new Date().toLocaleTimeString()
+
     cl()
-    cl(bold(yellow(name)), `💬 ${v}`)
+    cl(bold(yellow(name)), `${darken('[' + time + ']')} 💬 ${v}`)
     cl()
     process.exit(1)
   },
