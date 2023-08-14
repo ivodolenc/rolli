@@ -5,8 +5,13 @@ import { command } from './command.js'
 export function logHelpDetails() {
   const time = new Date().toLocaleTimeString()
 
-  cl(['', `${bold(cyan(name))} ${version}`, ''].join(n))
-  cl(`${darken('[' + time + ']')} 💬 HELP DETAILS ${cyan('[-h, --help]')}`, n)
+  cl(['', `${bold(cyan(name))} ${version}`].join(n))
+  cl(
+    `${bold(cyan(name))} ${darken('[' + time + ']')} 💬 HELP DETAILS ${cyan(
+      '[-h, --help]',
+    )}`,
+    n,
+  )
   cl(`LIST OF AVAILABLE COMMANDS 📟`, n)
 
   command({
@@ -24,5 +29,3 @@ export function logHelpDetails() {
     description: `Minifies bundle assets for production.`,
   })
 }
-
-logHelpDetails()
