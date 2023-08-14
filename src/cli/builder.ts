@@ -5,12 +5,12 @@ import _replace from '@rollup/plugin-replace'
 import _json from '@rollup/plugin-json'
 import _resolve from '@rollup/plugin-node-resolve'
 import _esbuild from 'rollup-plugin-esbuild'
-import { dts } from 'rollup-plugin-dts'
+import { dts as dtsPlugin } from 'rollup-plugin-dts'
 import { exists } from '../utils/fs.js'
 import { isObject, isString } from '../utils/is.js'
 import { logger } from '../utils/logger.js'
 import type { ModuleFormat } from 'rollup'
-import type { ConfigLoader } from '../types/cli/index.js'
+import type { ConfigLoader, PluginLog } from '../types/cli/index.js'
 
 const replacePlugin = _replace.default ?? _replace
 const jsonPlugin = _json.default ?? _json
@@ -32,14 +32,19 @@ async function getInputPath(value: string) {
   return fileJs ? inputJs : inputTs
 }
 
-async function logOutputStat(rootDir: string, value: string) {
+async function logOutputStat(
+  rootDir: string,
+  value: string,
+  pluginLog?: PluginLog,
+) {
   const outputStat = await stat(resolve(rootDir, value))
   const parseExt = value.endsWith('.d.ts') ? '.dts' : parse(value).ext
   const ext = parseExt.slice(1).toUpperCase().padEnd(3)
 
   bundleStats.size = bundleStats.size + outputStat.size
 
-  return logger.output(ext, value, outputStat.size)
+  logger.output(ext, value, outputStat.size)
+  if (pluginLog) logger.plugin(pluginLog)
 }
 
 function isExtAllowed(value: string) {
@@ -70,11 +75,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
   }
 
   if (replaceOptions) {
-    const options = {
-      preventAssignment: true,
-      ...replaceOptions,
-    }
-    plugins.unshift(replacePlugin(options))
+    plugins.unshift(replacePlugin(replaceOptions))
   }
 
   if (resolveOptions) {
@@ -95,69 +96,87 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
       if (isString(value) && isExtAllowed(value)) {
         bundleStats.files++
 
+        let pluginLog: PluginLog | undefined
+        const output = value
         let format: ModuleFormat = 'esm'
-        if (value.endsWith('.cjs')) format = 'cjs'
+        if (output.endsWith('.cjs')) format = 'cjs'
 
-        const input = await getInputPath(value)
+        const input = await getInputPath(output)
         const builder = await rollup({
           input: resolve(rootDir, input),
           ...builderOptions,
+          onLog: (level, log) => {
+            pluginLog = { level, log }
+          },
         })
         await builder.write({
-          file: resolve(rootDir, value),
+          file: resolve(rootDir, output),
           format,
         })
-        await logOutputStat(rootDir, value)
+        await logOutputStat(rootDir, output, pluginLog)
       }
 
       if (isObject(value)) {
         if (value.import && isExtAllowed(value.import)) {
           bundleStats.files++
 
-          const input = await getInputPath(value.import)
+          let pluginLog: PluginLog | undefined
+          const output = value.import
+          const input = await getInputPath(output)
           const builder = await rollup({
             input: resolve(rootDir, input),
             ...builderOptions,
+            onLog: (level, log) => {
+              pluginLog = { level, log }
+            },
           })
           await builder.write({
-            file: resolve(rootDir, value.import),
+            file: resolve(rootDir, output),
             format: 'esm',
           })
-          await logOutputStat(rootDir, value.import)
+          await logOutputStat(rootDir, output, pluginLog)
         }
 
         if (value.require && isExtAllowed(value.require)) {
           bundleStats.files++
 
-          const input = await getInputPath(value.require)
+          let pluginLog: PluginLog | undefined
+          const output = value.require
+          const input = await getInputPath(output)
           const builder = await rollup({
             input: resolve(rootDir, input),
             ...builderOptions,
+            onLog: (level, log) => {
+              pluginLog = { level, log }
+            },
           })
           await builder.write({
-            file: resolve(rootDir, value.require),
+            file: resolve(rootDir, output),
             format: 'cjs',
           })
-          await logOutputStat(rootDir, value.require)
+          await logOutputStat(rootDir, output, pluginLog)
         }
 
         if (value.types && value.types.endsWith('.d.ts')) {
           bundleStats.files++
 
-          const inputDir = value.types.split('/')[1]
-          const input = value.types
-            .replace(inputDir, 'src')
-            .replace('.d.ts', '.ts')
+          let pluginLog: PluginLog | undefined
+          const output = value.types
+          const inputDir = output.split('/')[1]
+          const input = output.replace(inputDir, 'src').replace('.d.ts', '.ts')
 
           const builder = await rollup({
             input: resolve(rootDir, input),
-            plugins: [dts(dtsOptions)],
+            plugins: [dtsPlugin(dtsOptions)],
+            onLog: (level, log) => {
+              pluginLog = { level, log }
+            },
           })
           await builder.write({
-            file: resolve(rootDir, value.types),
+            file: resolve(rootDir, output),
             format: 'esm',
           })
-          await logOutputStat(rootDir, value.types)
+          await logOutputStat(rootDir, output, pluginLog)
         }
       }
     }
@@ -166,20 +185,25 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
   if (isString(bin) && isExtAllowed(bin)) {
     bundleStats.files++
 
+    let pluginLog: PluginLog | undefined
+    const output = bin
     let format: ModuleFormat = 'esm'
-    if (bin.endsWith('.cjs')) format = 'cjs'
+    if (output.endsWith('.cjs')) format = 'cjs'
 
-    const input = await getInputPath(bin)
+    const input = await getInputPath(output)
     const builder = await rollup({
       input: resolve(rootDir, input),
       ...builderOptions,
+      onLog: (level, log) => {
+        pluginLog = { level, log }
+      },
     })
     await builder.write({
-      file: resolve(rootDir, bin),
+      file: resolve(rootDir, output),
       format,
       banner: '#!/usr/bin/env node',
     })
-    await logOutputStat(rootDir, bin)
+    await logOutputStat(rootDir, output, pluginLog)
   }
 
   if (isObject(bin)) {
@@ -187,77 +211,85 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
       if (isExtAllowed(value)) {
         bundleStats.files++
 
+        let pluginLog: PluginLog | undefined
+        const output = value
         let format: ModuleFormat = 'esm'
-        if (value.endsWith('.cjs')) format = 'cjs'
+        if (output.endsWith('.cjs')) format = 'cjs'
 
-        const input = await getInputPath(value)
+        const input = await getInputPath(output)
         const builder = await rollup({
           input: resolve(rootDir, input),
           ...builderOptions,
+          onLog: (level, log) => {
+            pluginLog = { level, log }
+          },
         })
         await builder.write({
-          file: resolve(rootDir, value),
+          file: resolve(rootDir, output),
           format,
           banner: '#!/usr/bin/env node',
         })
-        await logOutputStat(rootDir, value)
+        await logOutputStat(rootDir, output, pluginLog)
       }
     }
   }
 
   if (entries) {
-    for (const value of entries) {
+    for (const entry of entries) {
       bundleStats.files++
 
-      const entriesPlugins = [esbuildPlugin(value.esbuild)]
+      const entriesPlugins = [esbuildPlugin(entry.esbuild)]
 
-      if (value.json) {
-        const options = isObject(value.json) ? value.json : undefined
+      if (entry.json) {
+        const options = isObject(entry.json) ? entry.json : undefined
         entriesPlugins.push(jsonPlugin(options))
       }
 
-      if (value.replace) {
-        const options = {
-          preventAssignment: true,
-          ...value.replace,
-        }
-        entriesPlugins.unshift(replacePlugin(options))
+      if (entry.replace) {
+        entriesPlugins.unshift(replacePlugin(entry.replace))
       }
 
-      if (value.resolve) {
-        const options = isObject(value.resolve) ? value.resolve : undefined
+      if (entry.resolve) {
+        const options = isObject(entry.resolve) ? entry.resolve : undefined
         entriesPlugins.unshift(resolvePlugin(options))
       }
 
-      const format = value.format || 'esm'
+      let pluginLog: PluginLog | undefined
+      const format = entry.format || 'esm'
 
-      if (value.output.endsWith('.d.ts')) {
+      if (entry.output.endsWith('.d.ts')) {
         const builder = await rollup({
-          input: resolve(rootDir, value.input),
-          external: external || value.externals,
-          plugins: [dts(value.dts)],
+          input: resolve(rootDir, entry.input),
+          external: external || entry.externals,
+          plugins: [dtsPlugin(entry.dts)],
+          onLog: (level, log) => {
+            pluginLog = { level, log }
+          },
         })
         await builder.write({
-          file: resolve(rootDir, value.output),
+          file: resolve(rootDir, entry.output),
           format,
-          banner: value.banner,
-          footer: value.footer,
+          banner: entry.banner,
+          footer: entry.footer,
         })
       } else {
         const builder = await rollup({
-          input: resolve(rootDir, value.input),
-          external: external || value.externals,
+          input: resolve(rootDir, entry.input),
+          external: external || entry.externals,
           ...entriesPlugins,
+          onLog: (level, log) => {
+            pluginLog = { level, log }
+          },
         })
         await builder.write({
-          file: resolve(rootDir, value.output),
+          file: resolve(rootDir, entry.output),
           format,
-          banner: value.banner,
-          footer: value.footer,
+          banner: entry.banner,
+          footer: entry.footer,
         })
       }
 
-      await logOutputStat(rootDir, value.output)
+      await logOutputStat(rootDir, entry.output, pluginLog)
     }
   }
 
