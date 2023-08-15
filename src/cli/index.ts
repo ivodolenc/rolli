@@ -24,7 +24,7 @@ async function main() {
     return cl(config, n)
   }
 
-  await createBuilder(rootDir, config).catch(error)
+  await createBuilder(rootDir, args, config).catch(error)
 }
 
 nodePatch()

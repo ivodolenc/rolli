@@ -10,7 +10,11 @@ import { exists } from '../utils/fs.js'
 import { isObject, isString } from '../utils/is.js'
 import { logger } from '../utils/logger.js'
 import type { ModuleFormat } from 'rollup'
-import type { ConfigLoader, PluginLog } from '../types/cli/index.js'
+import type {
+  ConfigLoader,
+  ArgsOptions,
+  PluginLog,
+} from '../types/cli/index.js'
 
 const replacePlugin = _replace.default ?? _replace
 const jsonPlugin = _json.default ?? _json
@@ -22,9 +26,9 @@ let bundleStats = {
   files: 0,
 }
 
-async function getInputPath(srcDir: string, value: string) {
-  const outputDir = value.split('/')[1]
-  const inputDir = value.replace(outputDir, srcDir)
+async function getInputPath(srcDir: string, output: string) {
+  const outputDir = output.split('/')[1]
+  const inputDir = output.replace(outputDir, srcDir)
   const inputJs = inputDir.replace(parse(inputDir).ext, '.js')
   const inputTs = inputDir.replace(parse(inputDir).ext, '.ts')
   const fileJs = await exists(inputJs)
@@ -34,16 +38,16 @@ async function getInputPath(srcDir: string, value: string) {
 
 async function logOutputStat(
   rootDir: string,
-  value: string,
+  output: string,
   pluginLog?: PluginLog,
 ) {
-  const outputStat = await stat(resolve(rootDir, value))
-  const parseExt = value.endsWith('.d.ts') ? '.dts' : parse(value).ext
+  const outputStat = await stat(resolve(rootDir, output))
+  const parseExt = output.endsWith('.d.ts') ? '.dts' : parse(output).ext
   const ext = parseExt.slice(1).toUpperCase().padEnd(3)
 
   bundleStats.size = bundleStats.size + outputStat.size
 
-  logger.output(ext, value, outputStat.size)
+  logger.output(ext, output, outputStat.size)
   if (pluginLog) logger.plugin(pluginLog)
 }
 
@@ -53,47 +57,50 @@ function isExtAllowed(value: string) {
   return outputExtensions.some((ext) => value.endsWith(ext))
 }
 
-export async function createBuilder(rootDir: string, config: ConfigLoader) {
-  const {
-    srcDir,
-    exports,
-    bin,
-    entries,
-    externals: external,
-    rollup: rollupOptions,
-    json: jsonOptions,
-    replace: replaceOptions,
-    resolve: resolveOptions,
-    esbuild: esbuildOptions,
-    dts: dtsOptions,
-  } = config
+export async function createBuilder(
+  rootDir: string,
+  args: ArgsOptions,
+  config: ConfigLoader,
+) {
+  const { srcDir } = config
+
+  const esbuildOptions: typeof config.esbuild = {
+    minify: args.minify || config.minify,
+    tsconfig: args.tsconfig || config.tsconfig,
+    ...config.esbuild,
+  }
+
+  const dtsOptions: typeof config.dts = {
+    tsconfig: args.tsconfig || config.tsconfig,
+    ...config.dts,
+  }
 
   const plugins = [esbuildPlugin(esbuildOptions)]
 
-  if (jsonOptions) {
-    const options = isObject(jsonOptions) ? jsonOptions : undefined
+  if (config.json) {
+    const options = isObject(config.json) ? config.json : undefined
     plugins.push(jsonPlugin(options))
   }
 
-  if (replaceOptions) {
-    plugins.unshift(replacePlugin(replaceOptions))
+  if (config.replace) {
+    plugins.unshift(replacePlugin(config.replace))
   }
 
-  if (resolveOptions) {
-    const options = isObject(resolveOptions) ? resolveOptions : undefined
+  if (config.resolve) {
+    const options = isObject(config.resolve) ? config.resolve : undefined
     plugins.unshift(resolvePlugin(options))
   }
 
   const builderOptions = {
     plugins,
-    external,
+    external: config.externals,
   }
 
   logger.start(config.type)
   const start = Date.now()
 
-  if (exports) {
-    for (const value of Object.values(exports)) {
+  if (config.exports) {
+    for (const value of Object.values(config.exports)) {
       if (isString(value) && isExtAllowed(value)) {
         bundleStats.files++
 
@@ -183,11 +190,11 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
     }
   }
 
-  if (isString(bin) && isExtAllowed(bin)) {
+  if (isString(config.bin) && isExtAllowed(config.bin)) {
     bundleStats.files++
 
     let pluginLog: PluginLog | undefined
-    const output = bin
+    const output = config.bin
     let format: ModuleFormat = 'esm'
     if (output.endsWith('.cjs')) format = 'cjs'
 
@@ -207,8 +214,8 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
     await logOutputStat(rootDir, output, pluginLog)
   }
 
-  if (isObject(bin)) {
-    for (const value of Object.values(bin)) {
+  if (isObject(config.bin)) {
+    for (const value of Object.values(config.bin)) {
       if (isExtAllowed(value)) {
         bundleStats.files++
 
@@ -235,11 +242,22 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
     }
   }
 
-  if (entries) {
-    for (const entry of entries) {
+  if (config.entries) {
+    for (const entry of config.entries) {
       bundleStats.files++
 
-      const entriesPlugins = [esbuildPlugin(entry.esbuild)]
+      const entryEsbuild: typeof entry.esbuild = {
+        minify: args.minify || config.minify,
+        tsconfig: args.tsconfig || config.tsconfig,
+        ...entry.esbuild,
+      }
+
+      const entryDts: typeof entry.dts = {
+        tsconfig: args.tsconfig || config.tsconfig,
+        ...entry.dts,
+      }
+
+      const entriesPlugins = [esbuildPlugin(entryEsbuild)]
 
       if (entry.json) {
         const options = isObject(entry.json) ? entry.json : undefined
@@ -261,8 +279,8 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
       if (entry.output.endsWith('.d.ts')) {
         const builder = await rollup({
           input: resolve(rootDir, entry.input),
-          external: external || entry.externals,
-          plugins: [dtsPlugin(entry.dts)],
+          external: config.externals || entry.externals,
+          plugins: [dtsPlugin(entryDts)],
           onLog: (level, log) => {
             pluginLog = { level, log }
           },
@@ -276,7 +294,7 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
       } else {
         const builder = await rollup({
           input: resolve(rootDir, entry.input),
-          external: external || entry.externals,
+          external: config.externals || entry.externals,
           ...entriesPlugins,
           onLog: (level, log) => {
             pluginLog = { level, log }
@@ -294,8 +312,8 @@ export async function createBuilder(rootDir: string, config: ConfigLoader) {
     }
   }
 
-  if (rollupOptions) {
-    for (const options of rollupOptions) {
+  if (config.rollup) {
+    for (const options of config.rollup) {
       const builder = await rollup(options)
 
       for (const output of options.output) {

@@ -35,4 +35,6 @@ export interface RolliOptions {
   resolve?: RollupNodeResolveOptions | true
   esbuild?: EsbuildOptions
   dts?: DtsOptions
+  minify?: boolean
+  tsconfig?: string
 }

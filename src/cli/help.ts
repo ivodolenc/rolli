@@ -16,16 +16,21 @@ export function logHelpDetails() {
 
   command({
     flags: '[--print-config]',
-    description: `Prints the current configuration in the terminal.`,
+    description: `Prints the current Rolli configuration in the terminal.`,
   })
 
   command({
     flags: '[-c, --config] [my.config.js]',
-    description: `Sets a custom configuration.`,
+    description: `Sets a custom Rolli configuration.`,
   })
 
   command({
     flags: '[--minify]',
     description: `Minifies bundle assets for production.`,
+  })
+
+  command({
+    flags: '[--tsconfig] [my.tsconfig.json]',
+    description: `Sets a custom TypeScript configuration.`,
   })
 }

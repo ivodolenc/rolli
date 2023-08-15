@@ -2,5 +2,6 @@ export interface ArgsOptions {
   _: string[]
   c?: string
   config?: string
-  minify?: string
+  minify?: boolean
+  tsconfig?: string
 }
