@@ -1,8 +1,10 @@
-import { cl, ce } from 'colorate'
-import { logger } from '../utils/logger.js'
+import { cl, ce, bold, red, darken } from 'colorate'
+import { name } from '../cli/meta.js'
 
 export const error = (err: any) => {
-  logger.red('Something went wrong...')
+  const time = new Date().toLocaleTimeString()
+
+  cl(bold(red(name)), `${darken('[' + time + ']')} Something went wrong...`)
   cl()
   ce(err)
   process.exit(1)

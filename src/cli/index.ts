@@ -11,11 +11,12 @@ import { nodePatch } from '../utils/node.js'
 
 async function main() {
   const rootDir = process.cwd()
-  const args = mri(process.argv.splice(2), { alias: { c: 'config' } })
+  const alias = { h: 'help', c: 'config' }
+  const args = mri(process.argv.splice(2), { alias })
 
-  if (args.h || args.help) return logHelpDetails()
+  if (args.h) return logHelpDetails()
 
-  const config = await createConfigLoader(rootDir, args)
+  const config = await createConfigLoader(rootDir, args).catch(error)
   if (!config) return logger.notFound('Configuration not found.')
 
   if (args['print-config']) {
