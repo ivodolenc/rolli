@@ -11,7 +11,7 @@ npm i -D rolli
 ## Features
 
 - Smart automatic bundler
-- Built-in TS & ESM support
+- Built-in ESM & TS support
 - Allows advanced customization
 - Exports fully optimized code
 - Auto-handles node hashbangs
@@ -23,7 +23,7 @@ npm i -D rolli
 
 **Rolli** allows you to easily bundle your projects with _zero-config_ setup by extending the latest [Rollup](https://github.com/rollup/rollup) features and powerful plugins.
 
-It automatically detects your options and infers build entries, so in most cases all you need is a basic npm package setup.
+It automatically detects your options and infers build entries, so all you need is a basic npm package setup.
 
 Also, it's possible to fully customize all aspects of the build setup as needed.
 
@@ -69,15 +69,15 @@ That's it!
 
 ## Customization
 
-By default, **Rolli** has an integrated _auto-build_ setup mode that already covers most cases, but if needed, it can be fully customized to match specific requirements.
-
-Rolli automatically detects custom configuration via the `rolli` object inside `package.json` or loads it from a separate `rolli.config.js` file.
+**Rolli** has an integrated `auto-build` setup mode that already covers most cases, but if needed, it can be fully customized to match specific requirements.
 
 ### Config
 
+By default, Rolli automatically detects custom configuration via the `rolli` object inside `package.json` or loads it from a separate `rolli.config.js` file.
+
 The `rolli.config.js` file is located at the project's root and can override or extend the bundler's behavior.
 
-All [options](./src/types/options.ts) are optional, so you only have to specify what you’d like to change and the rest will fall back to the defaults.
+All [options](./src/types/options.ts) are optional, so you only have to specify what you’d like to change.
 
 ```js
 // rolli.config.js
