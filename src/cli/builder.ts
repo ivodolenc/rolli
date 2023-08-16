@@ -22,6 +22,8 @@ const resolvePlugin = _resolve.default ?? _resolve
 const esbuildPlugin = _esbuild.default ?? _esbuild
 
 let bundleStats = {
+  start: 0,
+  end: 0,
   size: 0,
   files: 0,
 }
@@ -64,72 +66,52 @@ export async function createBuilder(
 ) {
   const { srcDir } = config
 
-  const esbuildOptions: typeof config.esbuild = {
-    minify: args.minify || config.minify,
-    tsconfig: args.tsconfig || config.tsconfig,
-    ...config.esbuild,
-  }
-
-  const dtsOptions: typeof config.dts = {
-    tsconfig: args.tsconfig || config.tsconfig,
-    ...config.dts,
-  }
-
-  const plugins = [esbuildPlugin(esbuildOptions)]
-
-  if (config.json) {
-    const options = isObject(config.json) ? config.json : undefined
-    plugins.push(jsonPlugin(options))
-  }
-
-  if (config.replace) {
-    plugins.unshift(replacePlugin(config.replace))
-  }
-
-  if (config.resolve) {
-    const options = isObject(config.resolve) ? config.resolve : undefined
-    plugins.unshift(resolvePlugin(options))
-  }
-
-  const builderOptions = {
-    plugins,
-    external: config.externals,
-  }
-
   logger.start(config.type)
-  const start = Date.now()
+  bundleStats.start = Date.now()
 
-  if (config.exports) {
-    for (const value of Object.values(config.exports)) {
-      if (isString(value) && isExtAllowed(value)) {
-        bundleStats.files++
+  if (config.exports || config.bin) {
+    const esbuildOptions: typeof config.esbuild = {
+      minify: args.minify || config.minify,
+      tsconfig: args.tsconfig || config.tsconfig,
+      ...config.esbuild,
+    }
 
-        let pluginLog: PluginLog | undefined
-        const output = value
-        let format: ModuleFormat = 'esm'
-        if (output.endsWith('.cjs')) format = 'cjs'
+    const dtsOptions: typeof config.dts = {
+      tsconfig: args.tsconfig || config.tsconfig,
+      ...config.dts,
+    }
 
-        const input = await getInputPath(srcDir, output)
-        const builder = await rollup({
-          input: resolve(rootDir, input),
-          ...builderOptions,
-          onLog: (level, log) => {
-            pluginLog = { level, log }
-          },
-        })
-        await builder.write({
-          file: resolve(rootDir, output),
-          format,
-        })
-        await logOutputStat(rootDir, output, pluginLog)
-      }
+    const plugins = [esbuildPlugin(esbuildOptions)]
 
-      if (isObject(value)) {
-        if (value.import && isExtAllowed(value.import)) {
+    if (config.json) {
+      const options = isObject(config.json) ? config.json : undefined
+      plugins.push(jsonPlugin(options))
+    }
+
+    if (config.replace) {
+      plugins.unshift(replacePlugin(config.replace))
+    }
+
+    if (config.resolve) {
+      const options = isObject(config.resolve) ? config.resolve : undefined
+      plugins.unshift(resolvePlugin(options))
+    }
+
+    const builderOptions = {
+      plugins,
+      external: config.externals,
+    }
+
+    if (config.exports) {
+      for (const value of Object.values(config.exports)) {
+        if (isString(value) && isExtAllowed(value)) {
           bundleStats.files++
 
           let pluginLog: PluginLog | undefined
-          const output = value.import
+          const output = value
+          let format: ModuleFormat = 'esm'
+          if (output.endsWith('.cjs')) format = 'cjs'
+
           const input = await getInputPath(srcDir, output)
           const builder = await rollup({
             input: resolve(rootDir, input),
@@ -140,104 +122,128 @@ export async function createBuilder(
           })
           await builder.write({
             file: resolve(rootDir, output),
-            format: 'esm',
+            format,
           })
           await logOutputStat(rootDir, output, pluginLog)
         }
 
-        if (value.require && isExtAllowed(value.require)) {
-          bundleStats.files++
+        if (isObject(value)) {
+          if (value.import && isExtAllowed(value.import)) {
+            bundleStats.files++
 
-          let pluginLog: PluginLog | undefined
-          const output = value.require
-          const input = await getInputPath(srcDir, output)
-          const builder = await rollup({
-            input: resolve(rootDir, input),
-            ...builderOptions,
-            onLog: (level, log) => {
-              pluginLog = { level, log }
-            },
-          })
-          await builder.write({
-            file: resolve(rootDir, output),
-            format: 'cjs',
-          })
-          await logOutputStat(rootDir, output, pluginLog)
-        }
+            let pluginLog: PluginLog | undefined
+            const output = value.import
+            const input = await getInputPath(srcDir, output)
+            const builder = await rollup({
+              input: resolve(rootDir, input),
+              ...builderOptions,
+              onLog: (level, log) => {
+                pluginLog = { level, log }
+              },
+            })
+            await builder.write({
+              file: resolve(rootDir, output),
+              format: 'esm',
+            })
+            await logOutputStat(rootDir, output, pluginLog)
+          }
 
-        if (value.types && value.types.endsWith('.d.ts')) {
-          bundleStats.files++
+          if (value.require && isExtAllowed(value.require)) {
+            bundleStats.files++
 
-          let pluginLog: PluginLog | undefined
-          const output = value.types
-          const inputDir = output.split('/')[1]
-          const input = output.replace(inputDir, 'src').replace('.d.ts', '.ts')
+            let pluginLog: PluginLog | undefined
+            const output = value.require
+            const input = await getInputPath(srcDir, output)
+            const builder = await rollup({
+              input: resolve(rootDir, input),
+              ...builderOptions,
+              onLog: (level, log) => {
+                pluginLog = { level, log }
+              },
+            })
+            await builder.write({
+              file: resolve(rootDir, output),
+              format: 'cjs',
+            })
+            await logOutputStat(rootDir, output, pluginLog)
+          }
 
-          const builder = await rollup({
-            input: resolve(rootDir, input),
-            plugins: [dtsPlugin(dtsOptions)],
-            onLog: (level, log) => {
-              pluginLog = { level, log }
-            },
-          })
-          await builder.write({
-            file: resolve(rootDir, output),
-            format: 'esm',
-          })
-          await logOutputStat(rootDir, output, pluginLog)
+          if (value.types && value.types.endsWith('.d.ts')) {
+            bundleStats.files++
+
+            let pluginLog: PluginLog | undefined
+            const output = value.types
+            const inputDir = output.split('/')[1]
+            const input = output
+              .replace(inputDir, 'src')
+              .replace('.d.ts', '.ts')
+
+            const builder = await rollup({
+              input: resolve(rootDir, input),
+              plugins: [dtsPlugin(dtsOptions)],
+              onLog: (level, log) => {
+                pluginLog = { level, log }
+              },
+            })
+            await builder.write({
+              file: resolve(rootDir, output),
+              format: 'esm',
+            })
+            await logOutputStat(rootDir, output, pluginLog)
+          }
         }
       }
     }
-  }
 
-  if (isString(config.bin) && isExtAllowed(config.bin)) {
-    bundleStats.files++
+    if (isString(config.bin) && isExtAllowed(config.bin)) {
+      bundleStats.files++
 
-    let pluginLog: PluginLog | undefined
-    const output = config.bin
-    let format: ModuleFormat = 'esm'
-    if (output.endsWith('.cjs')) format = 'cjs'
+      let pluginLog: PluginLog | undefined
+      const output = config.bin
+      let format: ModuleFormat = 'esm'
+      if (output.endsWith('.cjs')) format = 'cjs'
 
-    const input = await getInputPath(srcDir, output)
-    const builder = await rollup({
-      input: resolve(rootDir, input),
-      ...builderOptions,
-      onLog: (level, log) => {
-        pluginLog = { level, log }
-      },
-    })
-    await builder.write({
-      file: resolve(rootDir, output),
-      format,
-      banner: '#!/usr/bin/env node',
-    })
-    await logOutputStat(rootDir, output, pluginLog)
-  }
+      const input = await getInputPath(srcDir, output)
+      const builder = await rollup({
+        input: resolve(rootDir, input),
+        ...builderOptions,
+        onLog: (level, log) => {
+          pluginLog = { level, log }
+        },
+      })
+      await builder.write({
+        file: resolve(rootDir, output),
+        format,
+        banner: '#!/usr/bin/env node',
+      })
+      await logOutputStat(rootDir, output, pluginLog)
+    }
 
-  if (isObject(config.bin)) {
-    for (const value of Object.values(config.bin)) {
-      if (isExtAllowed(value)) {
-        bundleStats.files++
+    if (isObject(config.bin)) {
+      for (const value of Object.values(config.bin)) {
+        if (isExtAllowed(value)) {
+          bundleStats.files++
 
-        let pluginLog: PluginLog | undefined
-        const output = value
-        let format: ModuleFormat = 'esm'
-        if (output.endsWith('.cjs')) format = 'cjs'
+          let pluginLog: PluginLog | undefined
+          const output = value
+          let format: ModuleFormat = 'esm'
+          if (output.endsWith('.cjs')) format = 'cjs'
 
-        const input = await getInputPath(srcDir, output)
-        const builder = await rollup({
-          input: resolve(rootDir, input),
-          ...builderOptions,
-          onLog: (level, log) => {
-            pluginLog = { level, log }
-          },
-        })
-        await builder.write({
-          file: resolve(rootDir, output),
-          format,
-          banner: '#!/usr/bin/env node',
-        })
-        await logOutputStat(rootDir, output, pluginLog)
+          const input = await getInputPath(srcDir, output)
+          const builder = await rollup({
+            input: resolve(rootDir, input),
+            ...builderOptions,
+            onLog: (level, log) => {
+              pluginLog = { level, log }
+            },
+          })
+          await builder.write({
+            file: resolve(rootDir, output),
+            format,
+            banner: '#!/usr/bin/env node',
+          })
+          await logOutputStat(rootDir, output, pluginLog)
+        }
       }
     }
   }
@@ -275,11 +281,14 @@ export async function createBuilder(
 
       let pluginLog: PluginLog | undefined
       const format = entry.format || 'esm'
+      const external = config.externals || entry.externals
+      const banner = entry.banner
+      const footer = entry.footer
 
       if (entry.output.endsWith('.d.ts')) {
         const builder = await rollup({
           input: resolve(rootDir, entry.input),
-          external: config.externals || entry.externals,
+          external,
           plugins: [dtsPlugin(entryDts)],
           onLog: (level, log) => {
             pluginLog = { level, log }
@@ -288,14 +297,14 @@ export async function createBuilder(
         await builder.write({
           file: resolve(rootDir, entry.output),
           format,
-          banner: entry.banner,
-          footer: entry.footer,
+          banner,
+          footer,
         })
       } else {
         const builder = await rollup({
           input: resolve(rootDir, entry.input),
-          external: config.externals || entry.externals,
-          ...entriesPlugins,
+          external,
+          plugins: entriesPlugins,
           onLog: (level, log) => {
             pluginLog = { level, log }
           },
@@ -303,11 +312,10 @@ export async function createBuilder(
         await builder.write({
           file: resolve(rootDir, entry.output),
           format,
-          banner: entry.banner,
-          footer: entry.footer,
+          banner,
+          footer,
         })
       }
-
       await logOutputStat(rootDir, entry.output, pluginLog)
     }
   }
@@ -325,11 +333,10 @@ export async function createBuilder(
     }
   }
 
-  const end = Date.now()
-  const time = end - start
+  bundleStats.end = Date.now()
 
   logger.end({
-    time,
+    time: bundleStats.end - bundleStats.start,
     size: bundleStats.size,
     files: bundleStats.files,
   })
