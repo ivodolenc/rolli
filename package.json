@@ -54,7 +54,7 @@
     "@types/node": "^20.5.0",
     "configshare": "^0.1.2",
     "eslint": "^8.47.0",
-    "prettier": "^3.0.1",
+    "prettier": "^3.0.2",
     "tsx": "^3.12.7",
     "typescript": "^5.0.4"
   },
