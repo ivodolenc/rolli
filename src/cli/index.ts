@@ -4,9 +4,8 @@ import mri from 'mri'
 import { cl, n } from 'colorate'
 import { logHelpDetails } from './help.js'
 import { createBuilder } from './builder.js'
-import { logger } from '../utils/logger.js'
-import { error } from '../utils/error.js'
 import { createConfigLoader } from './loader.js'
+import { logger, error } from '../utils/index.js'
 import { nodePatch } from '../utils/node.js'
 
 async function main() {
