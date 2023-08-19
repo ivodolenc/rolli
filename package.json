@@ -47,18 +47,31 @@
     "esbuild": "^0.19.2",
     "mri": "^1.2.0",
     "rollup": "^3.28.0",
-    "rollup-plugin-dts": "^5.3.1",
+    "rollup-plugin-dts": "^6.0.0",
     "rollup-plugin-esbuild": "^5.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.5.0",
+    "@types/node": "^20.5.1",
     "configshare": "^0.1.2",
     "eslint": "^8.47.0",
     "prettier": "^3.0.2",
     "tsx": "^3.12.7",
-    "typescript": "^5.0.4"
+    "typescript": "^5.1.6"
   },
-  "publishConfig": {
-    "access": "public"
+  "peerDependencies": {
+    "typescript": "^5.1.6",
+    "@types/node": "^20.5.1"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    },
+    "@types/node": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=v18.17.1",
+    "npm": ">=9.8.1"
   }
 }
