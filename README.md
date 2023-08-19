@@ -73,7 +73,7 @@ That's it!
 
 ### Config
 
-By default, Rolli automatically detects custom configuration via the `rolli` object inside `package.json` or loads it from a separate `rolli.config.js` file.
+By default, Rolli automatically detects custom configuration via the `rolli.config.js` file or the `rolli` object inside `package.json`.
 
 The `rolli.config.js` file is located at the project's root and can override or extend the bundler's behavior.
 
@@ -87,20 +87,6 @@ export default defineConfig({
 })
 ```
 
-Another way is to specify the `rolli` object in the `package.json` file.
-
-This can be useful for simple static data, but keep in mind that the _.json_ format is not compatible with dynamic configuration like the _.js_ format.
-
-```js
-// package.json
-
-{
-  "rolli": {
-    // ...
-  }
-}
-```
-
 ### Config path
 
 Also, it is possible to set a custom config path via the cli command:
@@ -111,9 +97,9 @@ npx rolli --config my.config.js
 
 ## Custom Setup
 
-Sometimes it is necessary to manually set the build entries or include extra files that can't be specified via the _exports_ or _bin_ options.
+Sometimes it is necessary to manually set the build entries or include extra files that can't be specified via the auto-build _exports_ or _bin_ modes.
 
-Rolli provides an additional `entries` build mode that allows you to tweak the settings for each object separately. This is very powerful and flexible mode since it can be used in combination with the auto-build modes, but also as a fully manual setup.
+Rolli provides an additional `entries` build mode that allows you to tweak the settings for each object individually. This is very powerful and flexible mode since it can be used in combination with the auto-build modes, but also as a fully manual setup.
 
 ```js
 // rolli.config.js
@@ -130,7 +116,7 @@ export default defineConfig({
     {
       input: './src/types/index.ts',
       output: './dist/types.d.ts',
-      externals: ['id-1', 'id-2', 'id-3'],
+      externals: ['id-1', 'id-2', /regexp/],
     },
     {
       input: './src/cli/index.js',
@@ -179,7 +165,7 @@ export default defineConfig({
 
 Specifies the auto-build `exports` mode.
 
-When enabled, it automatically parses and bundles all entries that are defined in the _package.json_ file via the _exports_ object (node subpath [exports](https://nodejs.org/api/packages.html#subpath-exports)).
+When enabled, it automatically parses and bundles all entries that are defined via the _exports_ object (node subpath [exports](https://nodejs.org/api/packages.html#subpath-exports)) in the _package.json_ file .
 
 All defined _output_ paths are automatically matched with _input_ paths. The _input_ directory is specified by the `srcDir` option.
 
@@ -200,7 +186,7 @@ export default defineConfig({
 
 Specifies the auto-build `bin` mode.
 
-When enabled, it automatically parses and bundles all entries that are defined in the _package.json_ file via the _bin_ object ([executable](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#bin) files).
+When enabled, it automatically parses and bundles all entries that are defined via the _bin_ object ([executable](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#bin) files) in the _package.json_ file .
 
 By default, each compiled _bin_ file will have a `#!/usr/bin/env node` inserted at the very beginning.
 
@@ -221,7 +207,7 @@ export default defineConfig({
 
 Specifies the custom `entries` mode.
 
-It allows you to manually set all build entries and adjust [options](./src/types/options.ts) for each object separately.
+It allows you to manually set all build entries and adjust [options](./src/types/options.ts) for each object individually.
 
 Defined entries can be used with auto-build modes or separately, depending on preference. In each object, only `input` and `output` options are required, all others are optional.
 
@@ -246,7 +232,7 @@ export default defineConfig({
 
 Specifies module IDs that should remain external to the bundle. Accepts an array of _strings_ or _regular expressions_.
 
-By default, _externals_ are automatically inferred from _package.json_ file via _dependencies_ object. Note that manual entry overwrites the default IDs so you must re-enter any dependencies you wish to exclude.
+By default, _externals_ are automatically inferred via the _dependencies_ object from the _package.json_ file. Note that manual entry overwrites the default IDs so you must re-enter any dependencies you wish to exclude.
 
 ```js
 // rolli.config.js
