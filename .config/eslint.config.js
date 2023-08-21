@@ -5,9 +5,13 @@ export default [
   tsConfig,
   ignoresConfig,
   {
+    files: tsConfig.files,
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { ignoreRestSiblings: true },
+      ],
     },
   },
 ]
