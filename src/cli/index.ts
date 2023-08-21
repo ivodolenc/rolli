@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import mri from 'mri'
-import { cl, n } from 'colorate'
 import { logHelpDetails } from './help.js'
 import { createBuilder } from './builder.js'
 import { createConfigLoader } from './loader.js'
@@ -19,8 +18,8 @@ async function main() {
   if (!config) return logger.notFound('Configuration not found.')
 
   if (args['print-config']) {
-    logger.printConfig()
-    return cl(config, n)
+    const { exportsPaths, binPaths, externals, ...printConfig } = config
+    return logger.printConfig(printConfig)
   }
 
   await createBuilder(rootDir, args, config).catch(error)

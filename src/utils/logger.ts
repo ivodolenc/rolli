@@ -35,13 +35,15 @@ export const logger = {
     cl()
     process.exit(1)
   },
-  printConfig: () => {
+  printConfig: (config: any) => {
     const time = new Date().toLocaleTimeString()
     const flag = cyan('[--print-config]')
 
     cl()
     cl(bold(cyan(name)), version)
     cl(bold(cyan(name)), `${darken('[' + time + ']')} ⚙️  CONFIGURATION`, flag)
+    cl()
+    cl(config)
     cl()
   },
 }
