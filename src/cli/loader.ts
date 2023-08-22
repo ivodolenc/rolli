@@ -1,6 +1,5 @@
 import { parse, resolve } from 'node:path'
-import { exists } from '../utils/fs.js'
-import { error } from '../utils/error.js'
+import { exists, error } from '../utils/index.js'
 import type { ArgsOptions, ConfigLoader } from '../types/cli/index.js'
 
 async function parseConfig(filePath: string, defaults: ConfigLoader) {
@@ -27,10 +26,9 @@ export async function createConfigLoader(rootDir: string, args: ArgsOptions) {
   const fileJs = await exists(pathJs)
 
   const defaults: ConfigLoader = {
-    srcDir: 'src',
     type: 'auto',
-    exports,
-    bin,
+    exportsPaths: exports,
+    binPaths: bin,
     externals: [/node:/, /rollup/, /types/, ...Object.keys(dependencies || {})],
   }
 

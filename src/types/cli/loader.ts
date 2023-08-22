@@ -1,20 +1,18 @@
 import type { RolliOptions } from '../options.js'
 
-export interface ConfigLoader
-  extends Omit<RolliOptions, 'srcDir' | 'exports' | 'bin'> {
-  srcDir: string
+export interface ConfigLoader extends Omit<RolliOptions, 'srcDir'> {
   type: string
-  exports: {
+  exportsPaths: {
     [key: string]: {
       types?: string
       import?: string
       require?: string
     }
   }
-  bin?:
+  binPaths?:
     | string
     | {
         [key: string]: string
       }
-    | false
+  externals: (string | RegExp)[]
 }
