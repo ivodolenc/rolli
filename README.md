@@ -124,6 +124,7 @@ export default defineConfig({
       output: './dist/cli.cjs',
       format: 'cjs',
       replace: {
+        preventAssignment: true,
         __name__: 'custom-name',
         __version__: '1.0.0',
       },
