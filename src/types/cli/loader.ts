@@ -1,6 +1,6 @@
 import type { RolliOptions } from '../options.js'
 
-export interface ConfigLoader extends Omit<RolliOptions, 'srcDir'> {
+export interface ConfigLoader extends RolliOptions {
   type: string
   exportsPaths: {
     [key: string]: {
