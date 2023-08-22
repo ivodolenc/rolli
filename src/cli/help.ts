@@ -26,11 +26,11 @@ export function logHelpDetails() {
 
   command({
     flags: '[--minify]',
-    description: `Minifies bundle assets for production.`,
+    description: `Minifies all bundle assets for production.`,
   })
 
   command({
     flags: '[--tsconfig] [my.tsconfig.json]',
-    description: `Sets a custom TypeScript configuration.`,
+    description: `Sets a custom TypeScript configuration for the entire bundle.`,
   })
 }
