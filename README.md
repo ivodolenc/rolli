@@ -99,7 +99,9 @@ npx rolli --config my.config.js
 
 Sometimes it is necessary to manually set the build entries or include extra files that can't be specified via the auto-build _exports_ or _bin_ modes.
 
-Rolli provides an additional `entries` build mode that allows you to tweak the settings for each object individually. This is very powerful and flexible mode since it can be used in combination with the auto-build modes, but also as a fully manual setup.
+Rolli provides an additional custom-build `entries` mode that allows you to tweak the settings for each object individually.
+
+This is very powerful and flexible mode since it can be used in combination with the auto-build modes, but also as a fully manual setup.
 
 ```js
 // rolli.config.js
@@ -109,7 +111,6 @@ import { defineConfig } from 'rolli'
 export default defineConfig({
   entries: [
     {
-      // 'input' and 'output' are required, all other options are optional
       input: './src/index.ts',
       output: './dist/index.mjs',
     },
@@ -126,7 +127,12 @@ export default defineConfig({
         __name__: 'custom-name',
         __version__: '1.0.0',
       },
-      // ...
+    },
+    {
+      input: './src/utils/index.ts',
+      output: './dist/utils/index.mjs',
+      json: true,
+      resolve: true,
     },
     // ...
   ],
@@ -143,37 +149,37 @@ Also, you can see the current Rolli configuration in the terminal by simply runn
 npx rolli --print-config
 ```
 
-### srcDir
+### exports
 
-- Type: `string`
-- Default: `src`
+- Type: `object | false`
+- Default: `enabled`
 
-Specifies the _source_ directory where all `input` files are located.
+Specifies the auto-build `exports` mode (node subpath [exports](https://nodejs.org/api/packages.html#subpath-exports)).
+
+This is enabled by default so any additional customization is optional.
+
+When enabled, it automatically parses and bundles all entries that are defined via the _exports_ object in the _package.json_ file.
+
+All defined _output_ paths automatically match _input_ `.js` or `.ts` paths. The _input_ directory is specified by the `srcDir` option.
 
 ```js
 // rolli.config.js
 
 export default defineConfig({
-  srcDir: 'source',
+  exports: {
+    // all options are optional
+    srcDir: 'src',
+    externals: ['id-1', 'id-2', /regexp/],
+    minify: false,
+    tsconfig: 'tsconfig.custom.json',
+    // ...
+  },
 })
 ```
-
-### exports
-
-- Type: `false`
-- Default: `enabled`
-
-Specifies the auto-build `exports` mode.
-
-When enabled, it automatically parses and bundles all entries that are defined via the _exports_ object (node subpath [exports](https://nodejs.org/api/packages.html#subpath-exports)) in the _package.json_ file .
-
-All defined _output_ paths are automatically matched with _input_ paths. The _input_ directory is specified by the `srcDir` option.
 
 To disable the option completely, set it to `false`.
 
 ```js
-// rolli.config.js
-
 export default defineConfig({
   exports: false,
 })
@@ -181,20 +187,37 @@ export default defineConfig({
 
 ### bin
 
-- Type: `false`
+- Type: `object | false`
 - Default: `enabled`
 
-Specifies the auto-build `bin` mode.
+Specifies the auto-build `bin` mode ([executable](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#bin) files).
 
-When enabled, it automatically parses and bundles all entries that are defined via the _bin_ object ([executable](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#bin) files) in the _package.json_ file .
+This is enabled by default so any additional customization is optional.
 
-By default, each compiled _bin_ file will have a `#!/usr/bin/env node` inserted at the very beginning.
+When enabled, it automatically parses and bundles all entries that are defined via the _bin_ object in the _package.json_ file.
 
-To disable the option completely, set it to `false`.
+All defined _output_ paths automatically match _input_ `.js` or `.ts` paths. The _input_ directory is specified by the `srcDir` option.
+
+Each compiled _bin_ file will have a `#!/usr/bin/env node` inserted at the very beginning.
 
 ```js
 // rolli.config.js
 
+export default defineConfig({
+  bin: {
+    // all options are optional
+    srcDir: 'src',
+    externals: ['id-1', 'id-2', /regexp/],
+    minify: false,
+    tsconfig: 'tsconfig.custom.json',
+    // ...
+  },
+})
+```
+
+To disable the option completely, set it to `false`.
+
+```js
 export default defineConfig({
   bin: false,
 })
@@ -205,11 +228,11 @@ export default defineConfig({
 - Type: `object[]`
 - Default: `undefined`
 
-Specifies the custom `entries` mode.
+Specifies the custom-build `entries` mode.
 
-It allows you to manually set all build entries and adjust [options](./src/types/options.ts) for each object individually.
+It allows you to manually set all build entries and adjust options for each object individually.
 
-Defined entries can be used with auto-build modes or separately, depending on preference. In each object, only `input` and `output` options are required, all others are optional.
+Defined entries can be used with auto-build modes or separately, depending on preference. In each object, only `input` and `output` are required, all other options are optional.
 
 ```js
 // rolli.config.js
@@ -217,30 +240,27 @@ Defined entries can be used with auto-build modes or separately, depending on pr
 export default defineConfig({
   entries: [
     {
+      // only 'input' and 'output' are required
       input: './src/index.ts',
       output: './dist/index.mjs',
+      // ...
     },
     // ...
   ],
 })
 ```
 
-### externals
-
-- Type: `(string | RegExp)[]`
-- Default: `package.dependencies`
-
-Specifies module IDs that should remain external to the bundle. Accepts an array of _strings_ or _regular expressions_.
-
-By default, _externals_ are automatically inferred via the _dependencies_ object from the _package.json_ file. Note that manual entry overwrites the default IDs so you must re-enter any dependencies you wish to exclude.
+To use fully custom-build mode, disable auto-build modes and specify the entries as needed:
 
 ```js
 // rolli.config.js
 
 export default defineConfig({
-  externals: [
-    'package-name',
-    /RegExp/,
+  // auto-build modes will be ignored
+  exports: false,
+  bin: false,
+  // only custom entries will be bundled
+  entries: [
     // ...
   ],
 })
@@ -251,7 +271,7 @@ export default defineConfig({
 - Type: `boolean`
 - Default: `undefined`
 
-Minifies bundle assets for production.
+Minifies all bundle assets for production.
 
 ```js
 // rolli.config.js
@@ -272,7 +292,9 @@ npx rolli --minify
 - Type: `string`
 - Default: `undefined`
 
-Sets a custom TypeScript configuration.
+Sets a custom TypeScript configuration for the entire bundle.
+
+By default, it uses the main _tsconfig.json_ file from the project's root.
 
 ```js
 // rolli.config.js
