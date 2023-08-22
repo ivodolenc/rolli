@@ -1,7 +1,8 @@
-export function isPathAllowed(output: string) {
-  if (!output.startsWith('./')) return false
+export function isPathAllowed(
+  path: string,
+  extensions: string[] = ['.js', '.mjs', '.cjs'],
+) {
+  if (!path.startsWith('./')) return false
 
-  const outputExtensions = ['.js', '.mjs', '.cjs']
-
-  return outputExtensions.some((ext) => output.endsWith(ext))
+  return extensions.some((ext) => path.endsWith(ext))
 }

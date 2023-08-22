@@ -46,17 +46,16 @@ async function logOutputStat(
   outputLength: number,
   logs?: OutputLogs[],
 ) {
+  const end = Date.now()
+  const done = end - start
   const outputStat = await stat(resolve(rootDir, output))
+  bundleStats.size = bundleStats.size + outputStat.size
 
   if (format.includes('system')) format = 'sys'
   if (format === 'commonjs') format = 'cjs'
   if (format === 'module') format = 'esm'
 
   const fileFormat = format.toUpperCase().padEnd(4)
-
-  const end = Date.now()
-  const done = end - start
-  bundleStats.size = bundleStats.size + outputStat.size
 
   if (logs && logs.length) {
     for (const value of logs) {
@@ -88,6 +87,7 @@ export async function createBuilder(
   bundleStats.start = Date.now()
 
   const outputLength = getLongestOutput(config)
+  const typesExts = ['.d.ts', '.d.mts', '.d.cts']
 
   if (config.exportsPaths) {
     const exportsOptions = isObject(config.exports) ? config.exports : undefined
@@ -145,8 +145,9 @@ export async function createBuilder(
         bundleStats.files++
         const start = Date.now()
 
-        const outputLogs: OutputLogs[] = []
         const output = value
+        const outputLogs: OutputLogs[] = []
+
         let format: ModuleFormat = 'esm'
         if (output.endsWith('.cjs')) format = 'cjs'
 
@@ -177,8 +178,9 @@ export async function createBuilder(
           bundleStats.files++
           const start = Date.now()
 
-          const outputLogs: OutputLogs[] = []
           const output = value.import
+          const outputLogs: OutputLogs[] = []
+
           const input = await getInputPath(exports.srcDir, output)
           const builder = await rollup({
             input: resolve(rootDir, input),
@@ -205,8 +207,9 @@ export async function createBuilder(
           bundleStats.files++
           const start = Date.now()
 
-          const outputLogs: OutputLogs[] = []
           const output = value.require
+          const outputLogs: OutputLogs[] = []
+
           const input = await getInputPath(exports.srcDir, output)
           const builder = await rollup({
             input: resolve(rootDir, input),
@@ -229,16 +232,26 @@ export async function createBuilder(
           )
         }
 
-        if (value.types && value.types.endsWith('.d.ts')) {
+        if (value.types && isPathAllowed(value.types, typesExts)) {
           bundleStats.files++
           const start = Date.now()
 
-          const outputLogs: OutputLogs[] = []
           const output = value.types
+          const outputLogs: OutputLogs[] = []
+
+          let outputExt = '.d.ts'
+          let format: ModuleFormat = 'esm'
+
+          if (output.endsWith('.d.mts')) outputExt = '.d.mts'
+          if (output.endsWith('.d.cts')) {
+            outputExt = '.d.cts'
+            format = 'cjs'
+          }
+
           const inputDir = output.split('/')[1]
           const input = output
             .replace(inputDir, exports.srcDir)
-            .replace('.d.ts', '.ts')
+            .replace(outputExt, '.ts')
 
           const builder = await rollup({
             input: resolve(rootDir, input),
@@ -249,7 +262,7 @@ export async function createBuilder(
           })
           await builder.write({
             file: resolve(rootDir, output),
-            format: 'esm',
+            format,
           })
           await logOutputStat(
             start,
@@ -310,8 +323,9 @@ export async function createBuilder(
       bundleStats.files++
       const start = Date.now()
 
-      const outputLogs: OutputLogs[] = []
       const output = config.binPaths
+      const outputLogs: OutputLogs[] = []
+
       let format: ModuleFormat = 'esm'
       if (output.endsWith('.cjs')) format = 'cjs'
 
@@ -344,8 +358,9 @@ export async function createBuilder(
           bundleStats.files++
           const start = Date.now()
 
-          const outputLogs: OutputLogs[] = []
           const output = value
+          const outputLogs: OutputLogs[] = []
+
           let format: ModuleFormat = 'esm'
           if (output.endsWith('.cjs')) format = 'cjs'
 
@@ -418,28 +433,16 @@ export async function createBuilder(
         entryPlugins.unshift(resolvePlugin(resolveOptions))
       }
 
+      const { input, output, banner, footer } = entry
       const outputLogs: OutputLogs[] = []
-      const { banner, footer } = entry
       const external = config.externals || entry.externals
       const format = entry.format || 'esm'
 
-      if (entry.output.endsWith('.d.ts')) {
+      const isTypesExts = typesExts.some((ext) => output.endsWith(ext))
+
+      if (input.startsWith('./') && output.startsWith('./') && !isTypesExts) {
         const builder = await rollup({
-          input: resolve(rootDir, entry.input),
-          plugins: [dtsPlugin(dtsOptions)],
-          onLog: (level, log) => {
-            if (entryLogFilter(log)) outputLogs.push({ level, log })
-          },
-        })
-        await builder.write({
-          file: resolve(rootDir, entry.output),
-          format,
-          banner,
-          footer,
-        })
-      } else {
-        const builder = await rollup({
-          input: resolve(rootDir, entry.input),
+          input: resolve(rootDir, input),
           external,
           plugins: entryPlugins,
           onLog: (level, log) => {
@@ -447,17 +450,34 @@ export async function createBuilder(
           },
         })
         await builder.write({
-          file: resolve(rootDir, entry.output),
+          file: resolve(rootDir, output),
           format,
           banner,
           footer,
         })
       }
+
+      if (input.startsWith('./') && isPathAllowed(output, typesExts)) {
+        const builder = await rollup({
+          input: resolve(rootDir, input),
+          plugins: [dtsPlugin(dtsOptions)],
+          onLog: (level, log) => {
+            if (entryLogFilter(log)) outputLogs.push({ level, log })
+          },
+        })
+        await builder.write({
+          file: resolve(rootDir, output),
+          format,
+          banner,
+          footer,
+        })
+      }
+
       await logOutputStat(
         start,
         rootDir,
         format,
-        entry.output,
+        output,
         outputLength,
         outputLogs,
       )
