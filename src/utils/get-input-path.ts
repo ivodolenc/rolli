@@ -1,5 +1,5 @@
 import { parse } from 'node:path'
-import { exists } from './fs.js'
+import { exists } from 'utills/node'
 
 export async function getInputPath(srcDir: string, output: string) {
   const outputDir = output.split('/')[1]

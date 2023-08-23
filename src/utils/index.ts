@@ -1,5 +1,3 @@
-export * from './is.js'
-export * from './fs.js'
 export * from './format-bytes.js'
 export * from './format-ms.js'
 export * from './logger.js'

@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import { stat } from 'node:fs/promises'
+import { isString, isObject } from 'utills'
 import { cl, lime, cyan, darken, pink } from 'colorate'
 import { rollup } from 'rollup'
 import { getLogFilter } from 'rollup/getLogFilter'
@@ -9,8 +10,6 @@ import _resolve from '@rollup/plugin-node-resolve'
 import _esbuild from 'rollup-plugin-esbuild'
 import { dts as dtsPlugin } from 'rollup-plugin-dts'
 import {
-  isObject,
-  isString,
   logger,
   formatBytes,
   formatMs,

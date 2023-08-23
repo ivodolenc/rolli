@@ -1,5 +1,6 @@
 import { parse, resolve } from 'node:path'
-import { exists, error } from '../utils/index.js'
+import { exists } from 'utills/node'
+import { error } from '../utils/index.js'
 import type { ArgsOptions, ConfigLoader } from '../types/cli/index.js'
 
 async function parseConfig(filePath: string, defaults: ConfigLoader) {
