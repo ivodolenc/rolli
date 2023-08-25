@@ -16,6 +16,8 @@ import {
   getInputPath,
   isPathAllowed,
   getLongestOutput,
+  excludeExportsPaths,
+  excludeBinPaths,
 } from '../utils/index.js'
 import type { InputOptions, ModuleFormat } from 'rollup'
 import type { Plugins } from '../types/index.js'
@@ -95,6 +97,9 @@ export async function createBuilder(
       externals: config.externals,
       ...exportsOptions,
     }
+    const exportsPaths = exports.exclude
+      ? excludeExportsPaths(config.exportsPaths, exports.exclude)
+      : config.exportsPaths
 
     const exportsMinify = exports.minify
       ? exports.minify
@@ -139,7 +144,7 @@ export async function createBuilder(
       plugins: exportsPlugins,
     }
 
-    for (const value of Object.values(config.exportsPaths)) {
+    for (const value of Object.values(exportsPaths)) {
       if (isString(value) && isPathAllowed(value)) {
         bundleStats.files++
         const start = Date.now()
@@ -283,6 +288,9 @@ export async function createBuilder(
       externals: config.externals,
       ...binOptions,
     }
+    const binPaths = bin.exclude
+      ? excludeBinPaths(config.binPaths, bin.exclude)
+      : config.binPaths
 
     const binMinify = bin.minify ? bin.minify : args.minify || config.minify
 
@@ -351,8 +359,8 @@ export async function createBuilder(
       )
     }
 
-    if (isObject(config.binPaths)) {
-      for (const value of Object.values(config.binPaths)) {
+    if (isObject(binPaths)) {
+      for (const value of Object.values(binPaths)) {
         if (isPathAllowed(value)) {
           bundleStats.files++
           const start = Date.now()
