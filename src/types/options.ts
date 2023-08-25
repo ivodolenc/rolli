@@ -15,23 +15,27 @@ export interface Plugins {
   dts?: DtsOptions
 }
 
-interface ExportsOptions extends Plugins {
+export interface ExportsOptions extends Plugins {
   srcDir?: string
   externals?: Externals
   logFilter?: string[]
   minify?: boolean
   tsconfig?: string
+  exclude?: {
+    [key: string]: true | { types?: true; import?: true; require?: true }
+  }
 }
 
-interface BinOptions extends Omit<Plugins, 'dts'> {
+export interface BinOptions extends Omit<Plugins, 'dts'> {
   srcDir?: string
   externals?: Externals
   logFilter?: string[]
   minify?: boolean
   tsconfig?: string
+  exclude?: { [key: string]: true }
 }
 
-interface EntriesOptions extends Plugins {
+export interface EntriesOptions extends Plugins {
   input: string
   output: string
   format?: OutputOptions['format']

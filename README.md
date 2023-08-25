@@ -178,7 +178,24 @@ export default defineConfig({
 })
 ```
 
-To disable the option completely, set it to `false`.
+It is possible to exclude certain paths from the auto-build mode.
+
+```js
+export default defineConfig({
+  exports: {
+    exclude: {
+      '.': true, // excludes the entire path
+      './path': {
+        types: true, // excludes types only
+        require: true, // excludes cjs only
+      },
+      // ...
+    },
+  },
+})
+```
+
+To disable the mode completely, set it to `false`.
 
 ```js
 export default defineConfig({
@@ -216,7 +233,20 @@ export default defineConfig({
 })
 ```
 
-To disable the option completely, set it to `false`.
+It is possible to exclude certain paths from the auto-build mode.
+
+```js
+export default defineConfig({
+  bin: {
+    exclude: {
+      command: true, // excludes the path
+      // ...
+    },
+  },
+})
+```
+
+To disable the mode completely, set it to `false`.
 
 ```js
 export default defineConfig({
