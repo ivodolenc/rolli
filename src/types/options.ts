@@ -7,6 +7,13 @@ import type { Options as DtsOptions } from 'rollup-plugin-dts'
 
 type Externals = (string | RegExp)[]
 
+type ExcludeExportsPath = {
+  path: string
+  types?: true
+  import?: true
+  require?: true
+}
+
 export interface Plugins {
   replace?: RollupReplaceOptions
   json?: RollupJsonOptions | true
@@ -21,9 +28,7 @@ export interface ExportsOptions extends Plugins {
   logFilter?: string[]
   minify?: boolean
   tsconfig?: string
-  exclude?: {
-    [key: string]: true | { types?: true; import?: true; require?: true }
-  }
+  exclude?: (string | ExcludeExportsPath)[]
 }
 
 export interface BinOptions extends Omit<Plugins, 'dts'> {
@@ -32,7 +37,7 @@ export interface BinOptions extends Omit<Plugins, 'dts'> {
   logFilter?: string[]
   minify?: boolean
   tsconfig?: string
-  exclude?: { [key: string]: true }
+  exclude?: string[]
 }
 
 export interface EntriesOptions extends Plugins {

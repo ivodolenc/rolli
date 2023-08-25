@@ -180,17 +180,19 @@ export default defineConfig({
 
 It is possible to exclude certain paths from the auto-build mode.
 
+The `exclude` option accepts an array of strings, which are essentially paths, or an array of objects that can individually control path's _types_, _import_ or _require_ options.
+
 ```js
 export default defineConfig({
   exports: {
-    exclude: {
-      '.': true, // excludes the entire path
-      './path': {
-        types: true, // excludes types only
-        require: true, // excludes cjs only
-      },
+    exclude: [
+      '.', // excludes the entire path
+      './path', // excludes the entire path
+      { path: './path-2', types: true }, // excludes types only
+      { path: './path-3', import: true, require: true }, // excludes esm and cjs
+      { path: './path-4', require: true }, // excludes cjs only
       // ...
-    },
+    ],
   },
 })
 ```
@@ -235,13 +237,15 @@ export default defineConfig({
 
 It is possible to exclude certain paths from the auto-build mode.
 
+The `exclude` option accepts an array of strings, which are essentially command names.
+
 ```js
 export default defineConfig({
   bin: {
-    exclude: {
-      command: true, // excludes the path
+    exclude: [
+      'command', // excludes the path by command name
       // ...
-    },
+    ],
   },
 })
 ```

@@ -1,4 +1,4 @@
-import { isBoolean, isObject } from 'utills'
+import { isString, isObject } from 'utills'
 import type { ExportsOptions, BinOptions } from '../types/options.js'
 import type { ConfigLoader } from '../types/cli/index.js'
 
@@ -8,24 +8,20 @@ export function excludeExportsPaths(
 ): ConfigLoader['exportsPaths'] {
   let exportsPaths = paths
 
-  for (const [key, value] of Object.entries(exclude)) {
-    const exportsKey = exportsPaths[key]
-
-    if (isBoolean(value) && value) {
-      const { [key]: _key, ...newPaths } = exportsPaths
-      exportsPaths = newPaths
+  for (const value of exclude) {
+    if (isString(value)) {
+      if (exportsPaths[value]) {
+        const { [value]: _, ...newPaths } = exportsPaths
+        exportsPaths = newPaths
+      }
     }
 
-    if (isObject(exportsKey) && isObject(value)) {
-      if (isBoolean(value.types) && value.types) {
-        exportsKey.types = undefined
-      }
-      if (isBoolean(value.import) && value.import) {
-        exportsKey.import = undefined
-      }
-      if (isBoolean(value.require) && value.require) {
-        exportsKey.require = undefined
-      }
+    if (isObject(value)) {
+      const path = exportsPaths[value.path]
+
+      if (value.types && isObject(path)) path.types = undefined
+      if (value.import && isObject(path)) path.import = undefined
+      if (value.require && isObject(path)) path.require = undefined
     }
   }
 
@@ -38,10 +34,10 @@ export function excludeBinPaths(
 ): ConfigLoader['binPaths'] {
   let binPaths = paths
 
-  for (const [key, value] of Object.entries(exclude)) {
+  for (const value of exclude) {
     if (isObject(binPaths)) {
-      if (isBoolean(value) && value) {
-        const { [key]: _key, ...newPaths } = binPaths
+      if (binPaths[value]) {
+        const { [value]: _, ...newPaths } = binPaths
         binPaths = newPaths
       }
     }
