@@ -178,6 +178,47 @@ export default defineConfig({
 })
 ```
 
+#### matcher
+
+- Path Syntax: `./[srcDir]/[filename].[js,ts]`
+
+The `matcher` basically parses all output paths and replaces `filename` with the user's custom value.
+
+```js
+export default defineConfig({
+  exports: {
+    matcher: {
+      types: 'dts', // renames all 'types' inputs to 'dts.ts'
+      import: 'esm', // renames all 'import' inputs to 'esm.{js,ts}'
+      require: 'cjs', // renames all 'require' inputs to 'cjs.{js,ts}'
+    },
+  },
+})
+```
+
+So now all input paths, including recursive ones, will be accordingly matched.
+
+```js
+// package.json
+{
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts", // matches the input './src/types/dts.ts'
+      "import": "./dist/index.mjs", // matches the input './src/esm.{js,ts}'
+      "require": "./dist/index.cjs", // matches the input './src/cjs.{js,ts}'
+    },
+    "./path": {
+      "types": "./dist/types/path/index.d.ts", // matches the input './src/types/path/dts.ts'
+      "import": "./dist/path/index.mjs", // matches the input './src/path/esm.{js,ts}'
+      "require": "./dist/path/index.cjs", // matches the input './src/path/cjs.{js,ts}'
+    },
+    // ...
+  },
+}
+```
+
+#### exclude
+
 It is possible to exclude certain paths from the auto-build mode.
 
 The `exclude` option accepts an array of strings, which are essentially paths, or an array of objects that can individually control path's _types_, _import_ or _require_ options.
@@ -234,6 +275,35 @@ export default defineConfig({
   },
 })
 ```
+
+#### matcher
+
+- Path Syntax: `./[srcDir]/[filename].[js,ts]`
+
+The `matcher` basically parses all output paths and replaces `filename` with the user's custom value.
+
+```js
+export default defineConfig({
+  bin: {
+    matcher: 'cli', // renames all inputs to 'cli.{js,ts}'
+  },
+})
+```
+
+So now all input paths, including recursive ones, will be accordingly matched.
+
+```js
+// package.json
+{
+  "bin": {
+    "command": "./dist/cli/index.mjs", // matches the input './src/cli/cli.{js,ts}'
+    "command2": "./dist/cli/dir/index.cjs", // matches the input './src/cli/dir/cli.{js,ts}'
+    // ...
+  }
+}
+```
+
+#### exclude
 
 It is possible to exclude certain paths from the auto-build mode.
 

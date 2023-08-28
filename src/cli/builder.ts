@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve, parse } from 'node:path'
 import { stat } from 'node:fs/promises'
 import { isString, isObject } from 'utills'
 import { cl, lime, cyan, darken, pink } from 'colorate'
@@ -155,7 +155,11 @@ export async function createBuilder(
         let format: ModuleFormat = 'esm'
         if (output.endsWith('.cjs')) format = 'cjs'
 
-        const input = await getInputPath(exports.srcDir, output)
+        const input = await getInputPath(
+          exports.srcDir,
+          output,
+          exports.matcher?.default,
+        )
         const builder = await rollup({
           input: resolve(rootDir, input),
           ...exportsBuilder,
@@ -185,7 +189,11 @@ export async function createBuilder(
           const output = value.import
           const outputLogs: OutputLogs[] = []
 
-          const input = await getInputPath(exports.srcDir, output)
+          const input = await getInputPath(
+            exports.srcDir,
+            output,
+            exports.matcher?.import,
+          )
           const builder = await rollup({
             input: resolve(rootDir, input),
             ...exportsBuilder,
@@ -214,7 +222,11 @@ export async function createBuilder(
           const output = value.require
           const outputLogs: OutputLogs[] = []
 
-          const input = await getInputPath(exports.srcDir, output)
+          const input = await getInputPath(
+            exports.srcDir,
+            output,
+            exports.matcher?.require,
+          )
           const builder = await rollup({
             input: resolve(rootDir, input),
             ...exportsBuilder,
@@ -242,6 +254,7 @@ export async function createBuilder(
 
           const output = value.types
           const outputLogs: OutputLogs[] = []
+          const matcher = exports.matcher?.types
 
           let outputExt = '.d.ts'
           let format: ModuleFormat = 'esm'
@@ -252,10 +265,16 @@ export async function createBuilder(
             format = 'cjs'
           }
 
-          const inputDir = output.split('/')[1]
-          const input = output
-            .replace(inputDir, exports.srcDir)
-            .replace(outputExt, '.ts')
+          const outputDir = output.split('/')[1]
+          const outputPath = output.replace(outputDir, exports.srcDir)
+          let input = ''
+
+          if (!matcher) {
+            input = outputPath.replace(outputExt, '.ts')
+          } else {
+            const outputBase = parse(outputPath).base
+            input = outputPath.replace(outputBase, `${matcher}.ts`)
+          }
 
           const builder = await rollup({
             input: resolve(rootDir, input),
@@ -336,7 +355,7 @@ export async function createBuilder(
       let format: ModuleFormat = 'esm'
       if (output.endsWith('.cjs')) format = 'cjs'
 
-      const input = await getInputPath(bin.srcDir, output)
+      const input = await getInputPath(bin.srcDir, output, bin.matcher)
       const builder = await rollup({
         input: resolve(rootDir, input),
         ...binBuilder,
@@ -371,7 +390,7 @@ export async function createBuilder(
           let format: ModuleFormat = 'esm'
           if (output.endsWith('.cjs')) format = 'cjs'
 
-          const input = await getInputPath(bin.srcDir, output)
+          const input = await getInputPath(bin.srcDir, output, bin.matcher)
           const builder = await rollup({
             input: resolve(rootDir, input),
             ...binBuilder,
