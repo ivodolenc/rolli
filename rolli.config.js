@@ -1,6 +1,6 @@
 import pkg from './package.json' assert { type: 'json' }
 
-/** @type import('./src/types/options').RolliOptions */
+/** @type {import('./src/types/options').RolliOptions} */
 export default {
   tsconfig: 'node_modules/configshare/tsconfig.json',
   bin: {
