@@ -1,4 +1,4 @@
 {
   "extends": "configshare/tsconfig",
-  "include": ["src/**/*", ".config/**/*"]
+  "include": ["src/**/*", ".config/**/*", "playground/**/*"]
 }
