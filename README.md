@@ -217,6 +217,22 @@ So now all input paths, including recursive ones, will be accordingly matched.
 }
 ```
 
+#### plugins
+
+Default plugin system is quite powerful, but if needed, it can be easily extended via the `plugins` option.
+
+```js
+export default defineConfig({
+  exports: {
+    plugins: [
+      plugin1(),
+      plugin2(),
+      // ...
+    ],
+  },
+})
+```
+
 #### exclude
 
 It is possible to exclude certain paths from the auto-build mode.
@@ -303,6 +319,22 @@ So now all input paths, including recursive ones, will be accordingly matched.
 }
 ```
 
+#### plugins
+
+Default plugin system is quite powerful, but if needed, it can be easily extended via the `plugins` option.
+
+```js
+export default defineConfig({
+  bin: {
+    plugins: [
+      plugin1(),
+      plugin2(),
+      // ...
+    ],
+  },
+})
+```
+
 #### exclude
 
 It is possible to exclude certain paths from the auto-build mode.
@@ -358,15 +390,33 @@ export default defineConfig({
 To use fully custom-build mode, disable auto-build modes and specify the entries as needed:
 
 ```js
-// rolli.config.js
-
 export default defineConfig({
   // auto-build modes will be ignored
   exports: false,
   bin: false,
-  // only custom entries will be bundled
+  // only custom entries will be compiled
   entries: [
     // ...
+  ],
+})
+```
+
+#### plugins
+
+Default plugin system is quite powerful, but if needed, it can be easily extended via the `plugins` option.
+
+```js
+export default defineConfig({
+  entries: [
+    {
+      input: './src/index.ts',
+      output: './dist/index.mjs',
+      plugins: [
+        plugin1(),
+        plugin2(),
+        // ...
+      ],
+    },
   ],
 })
 ```

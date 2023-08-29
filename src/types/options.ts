@@ -1,4 +1,4 @@
-import type { OutputOptions } from 'rollup'
+import type { OutputOptions, Plugin } from 'rollup'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import type { RollupJsonOptions } from '@rollup/plugin-json'
 import type { RollupNodeResolveOptions } from '@rollup/plugin-node-resolve'
@@ -37,6 +37,7 @@ export interface ExportsOptions extends Plugins {
   tsconfig?: string
   exclude?: (string | ExportsExclude)[]
   matcher?: ExportsMatcher
+  plugins?: Plugin[]
 }
 
 export interface BinOptions extends Omit<Plugins, 'dts'> {
@@ -47,6 +48,7 @@ export interface BinOptions extends Omit<Plugins, 'dts'> {
   tsconfig?: string
   exclude?: string[]
   matcher?: string
+  plugins?: Plugin[]
 }
 
 export interface EntriesOptions extends Plugins {
@@ -59,6 +61,7 @@ export interface EntriesOptions extends Plugins {
   footer?: OutputOptions['footer']
   minify?: boolean
   tsconfig?: string
+  plugins?: Plugin[]
 }
 
 export interface RolliOptions {
