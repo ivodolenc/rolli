@@ -1,6 +1,6 @@
 import { resolve, parse } from 'node:path'
 import { stat } from 'node:fs/promises'
-import { isString, isObject } from 'utills'
+import { isString, isObject, isBoolean } from 'utills'
 import { cl, lime, cyan, darken, pink } from 'colorate'
 import { rollup } from 'rollup'
 import { getLogFilter } from 'rollup/getLogFilter'
@@ -101,13 +101,13 @@ export async function createBuilder(
       ? excludeExportsPaths(config.exportsPaths, exports.exclude)
       : config.exportsPaths
 
-    const exportsMinify = exports.minify
+    const exportsMinify = isBoolean(exports.minify)
       ? exports.minify
-      : args.minify || config.minify
+      : isBoolean(config.minify) || args.minify
 
     const exportsTsconfig = exports.tsconfig
       ? exports.tsconfig
-      : args.tsconfig || config.tsconfig
+      : config.tsconfig || args.tsconfig
 
     const esbuildOptions: Plugins['esbuild'] = {
       minify: exportsMinify,
@@ -311,11 +311,13 @@ export async function createBuilder(
       ? excludeBinPaths(config.binPaths, bin.exclude)
       : config.binPaths
 
-    const binMinify = bin.minify ? bin.minify : args.minify || config.minify
+    const binMinify = isBoolean(bin.minify)
+      ? bin.minify
+      : isBoolean(config.minify) || args.minify
 
     const binTsconfig = bin.tsconfig
       ? bin.tsconfig
-      : args.tsconfig || config.tsconfig
+      : config.tsconfig || args.tsconfig
 
     const esbuildOptions: Plugins['esbuild'] = {
       minify: binMinify,
@@ -421,13 +423,13 @@ export async function createBuilder(
       bundleStats.files++
       const start = Date.now()
 
-      const entryMinify = entry.minify
+      const entryMinify = isBoolean(entry.minify)
         ? entry.minify
-        : args.minify || config.minify
+        : isBoolean(config.minify) || args.minify
 
       const entryTsconfig = entry.tsconfig
         ? entry.tsconfig
-        : args.tsconfig || config.tsconfig
+        : config.tsconfig || args.tsconfig
 
       const esbuildOptions: Plugins['esbuild'] = {
         minify: entryMinify,
@@ -461,7 +463,7 @@ export async function createBuilder(
 
       const { input, output, banner, footer } = entry
       const outputLogs: OutputLogs[] = []
-      const external = config.externals || entry.externals
+      const external = entry.externals || config.externals
       const format = entry.format || 'esm'
 
       const isTypesExts = typesExts.some((ext) => output.endsWith(ext))
