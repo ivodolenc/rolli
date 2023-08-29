@@ -139,6 +139,8 @@ export async function createBuilder(
       exportsPlugins.unshift(resolvePlugin(resolveOptions))
     }
 
+    if (exports.plugins) exportsPlugins.push(...exports.plugins)
+
     const exportsBuilder: InputOptions = {
       external: exports.externals,
       plugins: exportsPlugins,
@@ -342,6 +344,8 @@ export async function createBuilder(
       binPlugins.unshift(resolvePlugin(resolveOptions))
     }
 
+    if (bin.plugins) binPlugins.push(...bin.plugins)
+
     const binBuilder: InputOptions = {
       external: bin.externals,
       plugins: binPlugins,
@@ -460,6 +464,8 @@ export async function createBuilder(
           : undefined
         entryPlugins.unshift(resolvePlugin(resolveOptions))
       }
+
+      if (entry.plugins) entryPlugins.push(...entry.plugins)
 
       const { input, output, banner, footer } = entry
       const outputLogs: OutputLogs[] = []
