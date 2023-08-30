@@ -221,6 +221,8 @@ So now all input paths, including recursive ones, will be accordingly matched.
 
 Default plugin system is quite powerful, but if needed, it can be easily extended via the `plugins` option.
 
+The `plugins` option accepts an array of plugins.
+
 ```js
 export default defineConfig({
   exports: {
@@ -229,6 +231,19 @@ export default defineConfig({
       plugin2(),
       // ...
     ],
+  },
+})
+```
+
+Or it can be an object that explicitly defines when user plugins will run, before or after the default ones.
+
+```js
+export default defineConfig({
+  exports: {
+    plugins: {
+      start: [plugin1()], // runs 'before' the default plugins
+      end: [plugin2()], // runs 'after' the default plugins
+    },
   },
 })
 ```
@@ -323,6 +338,8 @@ So now all input paths, including recursive ones, will be accordingly matched.
 
 Default plugin system is quite powerful, but if needed, it can be easily extended via the `plugins` option.
 
+The `plugins` option accepts an array of plugins.
+
 ```js
 export default defineConfig({
   bin: {
@@ -331,6 +348,19 @@ export default defineConfig({
       plugin2(),
       // ...
     ],
+  },
+})
+```
+
+Or it can be an object that explicitly defines when user plugins will run, before or after the default ones.
+
+```js
+export default defineConfig({
+  bin: {
+    plugins: {
+      start: [plugin1()], // runs 'before' the default plugins
+      end: [plugin2()], // runs 'after' the default plugins
+    },
   },
 })
 ```
@@ -405,6 +435,8 @@ export default defineConfig({
 
 Default plugin system is quite powerful, but if needed, it can be easily extended via the `plugins` option.
 
+The `plugins` option accepts an array of plugins.
+
 ```js
 export default defineConfig({
   entries: [
@@ -416,6 +448,23 @@ export default defineConfig({
         plugin2(),
         // ...
       ],
+    },
+  ],
+})
+```
+
+Or it can be an object that explicitly defines when user plugins will run, before or after the default ones.
+
+```js
+export default defineConfig({
+  entries: [
+    {
+      input: './src/index.ts',
+      output: './dist/index.mjs',
+      plugins: {
+        start: [plugin1()], // runs 'before' the default plugins
+        end: [plugin2()], // runs 'after' the default plugins
+      },
     },
   ],
 })

@@ -1,6 +1,6 @@
 import { resolve, parse } from 'node:path'
 import { stat } from 'node:fs/promises'
-import { isString, isObject, isBoolean } from 'utills'
+import { isString, isObject, isBoolean, isArray } from 'utills'
 import { cl, lime, cyan, darken, pink } from 'colorate'
 import { rollup } from 'rollup'
 import { getLogFilter } from 'rollup/getLogFilter'
@@ -19,7 +19,7 @@ import {
   excludeExportsPaths,
   excludeBinPaths,
 } from '../utils/index.js'
-import type { InputOptions, ModuleFormat } from 'rollup'
+import type { InputOptions, ModuleFormat, Plugin } from 'rollup'
 import type { Plugins } from '../types/index.js'
 import type {
   ConfigLoader,
@@ -97,6 +97,9 @@ export async function createBuilder(
       externals: config.externals,
       ...exportsOptions,
     }
+
+    const logFilter = getLogFilter(exports.logFilter || [])
+
     const exportsPaths = exports.exclude
       ? excludeExportsPaths(config.exportsPaths, exports.exclude)
       : config.exportsPaths
@@ -112,34 +115,45 @@ export async function createBuilder(
     const esbuildOptions: Plugins['esbuild'] = {
       minify: exportsMinify,
       tsconfig: exportsTsconfig,
-      ...exports?.esbuild,
+      ...exports.esbuild,
     }
 
     const dtsOptions: Plugins['dts'] = {
       tsconfig: exportsTsconfig,
-      ...exports?.dts,
+      ...exports.dts,
     }
 
-    const exportsLogFilter = getLogFilter(exports.logFilter || [])
-    const exportsPlugins = [esbuildPlugin(esbuildOptions)]
+    const defaultPlugins: Plugin[] = [esbuildPlugin(esbuildOptions)]
 
-    if (exports?.json) {
+    const startPlugins: Plugin[] =
+      exports.plugins && !isArray(exports.plugins) ? exports.plugins.start : []
+
+    const endPlugins: Plugin[] =
+      exports.plugins && !isArray(exports.plugins) ? exports.plugins.end : []
+
+    if (exports.json) {
       const jsonOptions = isObject(exports.json) ? exports.json : undefined
-      exportsPlugins.push(jsonPlugin(jsonOptions))
+      defaultPlugins.push(jsonPlugin(jsonOptions))
     }
 
-    if (exports?.replace) {
-      exportsPlugins.unshift(replacePlugin(exports.replace))
+    if (exports.replace) {
+      defaultPlugins.unshift(replacePlugin(exports.replace))
     }
 
-    if (exports?.resolve) {
+    if (exports.resolve) {
       const resolveOptions = isObject(exports.resolve)
         ? exports.resolve
         : undefined
-      exportsPlugins.unshift(resolvePlugin(resolveOptions))
+      defaultPlugins.unshift(resolvePlugin(resolveOptions))
     }
 
-    if (exports.plugins) exportsPlugins.push(...exports.plugins)
+    if (isArray(exports.plugins)) defaultPlugins.push(...exports.plugins)
+
+    const exportsPlugins: Plugin[] = [
+      ...startPlugins,
+      ...defaultPlugins,
+      ...endPlugins,
+    ]
 
     const exportsBuilder: InputOptions = {
       external: exports.externals,
@@ -166,7 +180,7 @@ export async function createBuilder(
           input: resolve(rootDir, input),
           ...exportsBuilder,
           onLog: (level, log) => {
-            if (exportsLogFilter(log)) outputLogs.push({ level, log })
+            if (logFilter(log)) outputLogs.push({ level, log })
           },
         })
         await builder.write({
@@ -200,7 +214,7 @@ export async function createBuilder(
             input: resolve(rootDir, input),
             ...exportsBuilder,
             onLog: (level, log) => {
-              if (exportsLogFilter(log)) outputLogs.push({ level, log })
+              if (logFilter(log)) outputLogs.push({ level, log })
             },
           })
           await builder.write({
@@ -233,7 +247,7 @@ export async function createBuilder(
             input: resolve(rootDir, input),
             ...exportsBuilder,
             onLog: (level, log) => {
-              if (exportsLogFilter(log)) outputLogs.push({ level, log })
+              if (logFilter(log)) outputLogs.push({ level, log })
             },
           })
           await builder.write({
@@ -282,7 +296,7 @@ export async function createBuilder(
             input: resolve(rootDir, input),
             plugins: [dtsPlugin(dtsOptions)],
             onLog: (level, log) => {
-              if (exportsLogFilter(log)) outputLogs.push({ level, log })
+              if (logFilter(log)) outputLogs.push({ level, log })
             },
           })
           await builder.write({
@@ -309,6 +323,9 @@ export async function createBuilder(
       externals: config.externals,
       ...binOptions,
     }
+
+    const logFilter = getLogFilter(bin.logFilter || [])
+
     const binPaths = bin.exclude
       ? excludeBinPaths(config.binPaths, bin.exclude)
       : config.binPaths
@@ -324,27 +341,38 @@ export async function createBuilder(
     const esbuildOptions: Plugins['esbuild'] = {
       minify: binMinify,
       tsconfig: binTsconfig,
-      ...bin?.esbuild,
+      ...bin.esbuild,
     }
 
-    const binLogFilter = getLogFilter(bin.logFilter || [])
-    const binPlugins = [esbuildPlugin(esbuildOptions)]
+    const defaultPlugins: Plugin[] = [esbuildPlugin(esbuildOptions)]
 
-    if (bin?.json) {
+    const startPlugins: Plugin[] =
+      bin.plugins && !isArray(bin.plugins) ? bin.plugins.start : []
+
+    const endPlugins: Plugin[] =
+      bin.plugins && !isArray(bin.plugins) ? bin.plugins.end : []
+
+    if (bin.json) {
       const jsonOptions = isObject(bin.json) ? bin.json : undefined
-      binPlugins.push(jsonPlugin(jsonOptions))
+      defaultPlugins.push(jsonPlugin(jsonOptions))
     }
 
-    if (bin?.replace) {
-      binPlugins.unshift(replacePlugin(bin.replace))
+    if (bin.replace) {
+      defaultPlugins.unshift(replacePlugin(bin.replace))
     }
 
-    if (bin?.resolve) {
+    if (bin.resolve) {
       const resolveOptions = isObject(bin.resolve) ? bin.resolve : undefined
-      binPlugins.unshift(resolvePlugin(resolveOptions))
+      defaultPlugins.unshift(resolvePlugin(resolveOptions))
     }
 
-    if (bin.plugins) binPlugins.push(...bin.plugins)
+    if (isArray(bin.plugins)) defaultPlugins.push(...bin.plugins)
+
+    const binPlugins: Plugin[] = [
+      ...startPlugins,
+      ...defaultPlugins,
+      ...endPlugins,
+    ]
 
     const binBuilder: InputOptions = {
       external: bin.externals,
@@ -366,7 +394,7 @@ export async function createBuilder(
         input: resolve(rootDir, input),
         ...binBuilder,
         onLog: (level, log) => {
-          if (binLogFilter(log)) outputLogs.push({ level, log })
+          if (logFilter(log)) outputLogs.push({ level, log })
         },
       })
       await builder.write({
@@ -401,7 +429,7 @@ export async function createBuilder(
             input: resolve(rootDir, input),
             ...binBuilder,
             onLog: (level, log) => {
-              if (binLogFilter(log)) outputLogs.push({ level, log })
+              if (logFilter(log)) outputLogs.push({ level, log })
             },
           })
           await builder.write({
@@ -427,6 +455,8 @@ export async function createBuilder(
       bundleStats.files++
       const start = Date.now()
 
+      const logFilter = getLogFilter(entry.logFilter || [])
+
       const entryMinify = isBoolean(entry.minify)
         ? entry.minify
         : isBoolean(config.minify) || args.minify
@@ -446,26 +476,37 @@ export async function createBuilder(
         ...entry.dts,
       }
 
-      const entryLogFilter = getLogFilter(entry.logFilter || [])
-      const entryPlugins = [esbuildPlugin(esbuildOptions)]
+      const defaultPlugins: Plugin[] = [esbuildPlugin(esbuildOptions)]
+
+      const startPlugins: Plugin[] =
+        entry.plugins && !isArray(entry.plugins) ? entry.plugins.start : []
+
+      const endPlugins: Plugin[] =
+        entry.plugins && !isArray(entry.plugins) ? entry.plugins.end : []
 
       if (entry.json) {
         const jsonOptions = isObject(entry.json) ? entry.json : undefined
-        entryPlugins.push(jsonPlugin(jsonOptions))
+        defaultPlugins.push(jsonPlugin(jsonOptions))
       }
 
       if (entry.replace) {
-        entryPlugins.unshift(replacePlugin(entry.replace))
+        defaultPlugins.unshift(replacePlugin(entry.replace))
       }
 
       if (entry.resolve) {
         const resolveOptions = isObject(entry.resolve)
           ? entry.resolve
           : undefined
-        entryPlugins.unshift(resolvePlugin(resolveOptions))
+        defaultPlugins.unshift(resolvePlugin(resolveOptions))
       }
 
-      if (entry.plugins) entryPlugins.push(...entry.plugins)
+      if (isArray(entry.plugins)) defaultPlugins.push(...entry.plugins)
+
+      const entryPlugins: Plugin[] = [
+        ...startPlugins,
+        ...defaultPlugins,
+        ...endPlugins,
+      ]
 
       const { input, output, banner, footer } = entry
       const outputLogs: OutputLogs[] = []
@@ -480,7 +521,7 @@ export async function createBuilder(
           external,
           plugins: entryPlugins,
           onLog: (level, log) => {
-            if (entryLogFilter(log)) outputLogs.push({ level, log })
+            if (logFilter(log)) outputLogs.push({ level, log })
           },
         })
         await builder.write({
@@ -496,7 +537,7 @@ export async function createBuilder(
           input: resolve(rootDir, input),
           plugins: [dtsPlugin(dtsOptions)],
           onLog: (level, log) => {
-            if (entryLogFilter(log)) outputLogs.push({ level, log })
+            if (logFilter(log)) outputLogs.push({ level, log })
           },
         })
         await builder.write({
