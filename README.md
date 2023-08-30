@@ -1,12 +1,18 @@
-# Rolli
+<p align="center">
+  <img src=".assets/cover.gif" alt="" />
+</p>
 
-A zero-config module bundler.
+<h1 align="center">Rolli</h1>
 
-<sub><a href="https://github.com/ivodolenc/rolli">Repository</a> | <a href="https://www.npmjs.com/package/rolli">Package</a> | <a href="https://github.com/ivodolenc/rolli/releases">Releases</a> | <a href="https://github.com/ivodolenc/rolli/discussions">Discussions</a></sub>
+<p align="center">A zero-config module bundler.</p>
 
-```sh
-npm i -D rolli
-```
+<p align="center">
+  <sub><a href="https://github.com/ivodolenc/rolli">Repository</a> | <a href="https://www.npmjs.com/package/rolli">Package</a> | <a href="https://github.com/ivodolenc/rolli/releases">Releases</a> | <a href="https://github.com/ivodolenc/rolli/discussions">Discussions</a></sub>
+</p>
+
+<pre align="center">npm i -D rolli</pre>
+
+<br>
 
 ## Features
 
