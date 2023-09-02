@@ -34,6 +34,7 @@
   },
   "scripts": {
     "build": "tsx src/cli/index.ts",
+    "bump": "bummp",
     "lint": "ESLINT_USE_FLAT_CONFIG=true eslint -c .config/eslint.config.js .",
     "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint -c .config/eslint.config.js --fix .",
     "format": "prettier --config .config/prettier.config.js --write .",
@@ -47,21 +48,22 @@
     "esbuild": "^0.19.2",
     "mri": "^1.2.0",
     "rollup": "^3.28.1",
-    "rollup-plugin-dts": "^6.0.0",
+    "rollup-plugin-dts": "^6.0.1",
     "rollup-plugin-esbuild": "^5.0.0",
     "utills": "^0.1.1"
   },
   "devDependencies": {
-    "@types/node": "^20.5.7",
+    "@types/node": "^20.5.8",
+    "bummp": "^0.1.0",
     "configshare": "^0.1.4",
     "eslint": "^8.48.0",
     "prettier": "^3.0.3",
-    "tsx": "^3.12.7",
+    "tsx": "^3.12.8",
     "typescript": "^5.1.6"
   },
   "peerDependencies": {
-    "@types/node": ">=20.5.1",
-    "typescript": ">=5.1.6"
+    "@types/node": ">=20.0.0",
+    "typescript": ">=5.0.0 || <=5.1.6"
   },
   "peerDependenciesMeta": {
     "@types/node": {
@@ -72,7 +74,6 @@
     }
   },
   "engines": {
-    "node": ">=v18.17.1",
-    "npm": ">=9.8.1"
+    "node": ">=v18"
   }
 }
