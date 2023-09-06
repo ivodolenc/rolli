@@ -47,14 +47,14 @@
     "colorate": "^0.1.4",
     "esbuild": "^0.19.2",
     "mri": "^1.2.0",
-    "rollup": "^3.28.1",
+    "rollup": "^3.29.0",
     "rollup-plugin-dts": "^6.0.1",
     "rollup-plugin-esbuild": "^5.0.0",
     "utills": "^0.1.1"
   },
   "devDependencies": {
-    "@types/node": "^20.5.8",
-    "bummp": "^0.1.0",
+    "@types/node": "^20.5.9",
+    "bummp": "^0.2.0",
     "configshare": "^0.1.4",
     "eslint": "^8.48.0",
     "prettier": "^3.0.3",
@@ -74,6 +74,6 @@
     }
   },
   "engines": {
-    "node": ">=v18"
+    "node": ">=v18.0.0"
   }
 }
