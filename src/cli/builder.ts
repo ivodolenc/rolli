@@ -90,7 +90,7 @@ export async function createBuilder(
   const outputLength = getLongestOutput(config)
   const typesExts = ['.d.ts', '.d.mts', '.d.cts']
 
-  if (config.exportsPaths) {
+  if (config.exportsPaths && config.exports !== false) {
     const exportsOptions = isObject(config.exports) ? config.exports : undefined
     const exports = {
       srcDir: 'src',
@@ -316,7 +316,7 @@ export async function createBuilder(
     }
   }
 
-  if (config.binPaths) {
+  if (config.binPaths && config.bin !== false) {
     const binOptions = isObject(config.bin) ? config.bin : undefined
     const bin = {
       srcDir: 'src',
