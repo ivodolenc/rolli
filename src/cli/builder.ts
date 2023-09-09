@@ -511,7 +511,7 @@ export async function createBuilder(
       const { input, output, banner, footer } = entry
       const outputLogs: OutputLogs[] = []
       const external = entry.externals || config.externals
-      const format = entry.format || 'esm'
+      let format: ModuleFormat | 'dts' = entry.format || 'esm'
 
       const isTypesExts = typesExts.some((ext) => output.endsWith(ext))
 
@@ -546,6 +546,8 @@ export async function createBuilder(
           banner,
           footer,
         })
+
+        format = 'dts'
       }
 
       await logOutputStat(
