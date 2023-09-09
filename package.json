@@ -53,10 +53,10 @@
     "utills": "^0.1.1"
   },
   "devDependencies": {
-    "@types/node": "^20.5.9",
+    "@types/node": "^20.6.0",
     "bummp": "^0.2.0",
-    "configshare": "^0.1.4",
-    "eslint": "^8.48.0",
+    "configshare": "^0.1.5",
+    "eslint": "^8.49.0",
     "prettier": "^3.0.3",
     "tsx": "^3.12.8",
     "typescript": "^5.1.6"
