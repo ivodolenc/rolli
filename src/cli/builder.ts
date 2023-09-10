@@ -20,7 +20,7 @@ import {
   excludeBinPaths,
 } from '../utils/index.js'
 import type { InputOptions, ModuleFormat, Plugin } from 'rollup'
-import type { Plugins } from '../types/index.js'
+import type { Plugins } from '../types/plugins.js'
 import type {
   ConfigLoader,
   ArgsOptions,
@@ -89,6 +89,10 @@ export async function createBuilder(
 
   const outputLength = getLongestOutput(config)
   const typesExts = ['.d.ts', '.d.mts', '.d.cts']
+
+  if (config.hooks && config.hooks['rolli:build:start']) {
+    await config.hooks['rolli:build:start']()
+  }
 
   if (config.exportsPaths && config.exports !== false) {
     const exportsOptions = isObject(config.exports) ? config.exports : undefined
@@ -559,6 +563,10 @@ export async function createBuilder(
         outputLogs,
       )
     }
+  }
+
+  if (config.hooks && config.hooks['rolli:build:end']) {
+    await config.hooks['rolli:build:end']()
   }
 
   bundleStats.end = Date.now()

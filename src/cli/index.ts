@@ -22,7 +22,15 @@ async function main() {
     return logger.printConfig(printConfig)
   }
 
+  if (config.hooks && config.hooks['rolli:start']) {
+    await config.hooks['rolli:start']()
+  }
+
   await createBuilder(rootDir, args, config).catch(error)
+
+  if (config.hooks && config.hooks['rolli:end']) {
+    await config.hooks['rolli:end']()
+  }
 }
 
 nodePatch()

@@ -19,6 +19,7 @@
 - Smart automatic bundler
 - Built-in ESM & TS support
 - Allows advanced customization
+- Provides a powerful hooking system
 - Exports fully optimized code
 - Auto-handles node hashbangs
 - Prints useful bundle stats
@@ -476,6 +477,35 @@ export default defineConfig({
 })
 ```
 
+### hooks
+
+- Type: `object`
+- Default: `undefined`
+
+Provides a powerful hooking system to further expand build modes.
+
+List of available [hooks](./src/types/hooks.ts):
+
+- `rolli:start`
+- `rolli:build:start`
+- `rolli:build:end`
+- `rolli:end`
+
+```js
+// rolli.config.js
+
+export default defineConfig({
+  hooks: {
+    'rolli:start': () => {
+      // ...
+    },
+    'rolli:end': async () => {
+      // ...
+    },
+  },
+})
+```
+
 ### minify
 
 - Type: `boolean`
@@ -504,7 +534,7 @@ npx rolli --minify
 
 Sets a custom TypeScript configuration for the entire bundle.
 
-By default, it uses the main _tsconfig.json_ file from the project's root.
+If not defined, it uses the main _tsconfig.json_ file from the project's root.
 
 ```js
 // rolli.config.js

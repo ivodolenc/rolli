@@ -1,5 +1,6 @@
 import { isString, isObject } from 'utills'
-import type { ExportsOptions, BinOptions } from '../types/options.js'
+import type { ExportsOptions } from '../types/exports.js'
+import type { BinOptions } from '../types/bin.js'
 import type { ConfigLoader } from '../types/cli/index.js'
 
 export function excludeExportsPaths(
