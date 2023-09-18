@@ -45,20 +45,20 @@
     "@rollup/plugin-node-resolve": "^15.2.1",
     "@rollup/plugin-replace": "^5.0.2",
     "colorate": "^0.1.4",
-    "esbuild": "^0.19.2",
+    "esbuild": "^0.19.3",
     "mri": "^1.2.0",
-    "rollup": "^3.29.1",
-    "rollup-plugin-dts": "^6.0.1",
+    "rollup": "^3.29.2",
+    "rollup-plugin-dts": "^6.0.2",
     "rollup-plugin-esbuild": "^5.0.0",
     "utills": "^0.1.1"
   },
   "devDependencies": {
-    "@types/node": "^20.6.0",
+    "@types/node": "^20.6.2",
     "bummp": "^0.2.0",
     "configshare": "^0.1.5",
     "eslint": "^8.49.0",
     "prettier": "^3.0.3",
-    "tsx": "^3.12.8",
+    "tsx": "^3.12.10",
     "typescript": "^5.1.6"
   },
   "peerDependencies": {
