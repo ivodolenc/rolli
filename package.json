@@ -1,6 +1,6 @@
 {
   "name": "rolli",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "Ivo Dolenc",
   "description": "A zero-config module bundler.",
   "license": "MIT",
