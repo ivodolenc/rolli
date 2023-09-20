@@ -2,8 +2,8 @@ import type { Plugin } from 'rollup'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import type { RollupJsonOptions } from '@rollup/plugin-json'
 import type { RollupNodeResolveOptions } from '@rollup/plugin-node-resolve'
-import type { Options as EsbuildOptions } from 'rollup-plugin-esbuild'
 import type { Options as DtsOptions } from 'rollup-plugin-dts'
+import type { TransformOptions as EsbuildOptions } from 'esbuild'
 
 export interface PluginsOptions {
   /**
