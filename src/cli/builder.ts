@@ -7,8 +7,8 @@ import { getLogFilter } from 'rollup/getLogFilter'
 import _replace from '@rollup/plugin-replace'
 import _json from '@rollup/plugin-json'
 import _resolve from '@rollup/plugin-node-resolve'
-import _esbuild from 'rollup-plugin-esbuild'
 import { dts as dtsPlugin } from 'rollup-plugin-dts'
+import { esbuild as esbuildPlugin } from '../utils/plugins/esbuild.js'
 import {
   logger,
   formatBytes,
@@ -18,6 +18,7 @@ import {
   getLongestOutput,
   excludeExportsPaths,
   excludeBinPaths,
+  getTsconfigRaw,
 } from '../utils/index.js'
 import type { InputOptions, ModuleFormat, Plugin } from 'rollup'
 import type { Plugins } from '../types/plugins.js'
@@ -30,7 +31,6 @@ import type {
 const replacePlugin = _replace.default ?? _replace
 const jsonPlugin = _json.default ?? _json
 const resolvePlugin = _resolve.default ?? _resolve
-const esbuildPlugin = _esbuild.default ?? _esbuild
 
 let bundleStats = {
   start: 0,
@@ -90,6 +90,14 @@ export async function createBuilder(
   const outputLength = getLongestOutput(config)
   const typesExts = ['.d.ts', '.d.mts', '.d.cts']
 
+  let globalTsconfigRaw: string | undefined
+  if (config.tsconfig) {
+    globalTsconfigRaw = await getTsconfigRaw(rootDir, config.tsconfig)
+  }
+  if (args.tsconfig) {
+    globalTsconfigRaw = await getTsconfigRaw(rootDir, args.tsconfig)
+  }
+
   if (config.hooks && config.hooks['rolli:build:start']) {
     await config.hooks['rolli:build:start']()
   }
@@ -112,18 +120,23 @@ export async function createBuilder(
       ? exports.minify
       : isBoolean(config.minify) || args.minify
 
-    const exportsTsconfig = exports.tsconfig
+    const exportsTsconfigPath = exports.tsconfig
       ? exports.tsconfig
       : config.tsconfig || args.tsconfig
 
+    let exportsTsconfigRaw = globalTsconfigRaw
+    if (exports.tsconfig) {
+      exportsTsconfigRaw = await getTsconfigRaw(rootDir, exports.tsconfig)
+    }
+
     const esbuildOptions: Plugins['esbuild'] = {
       minify: exportsMinify,
-      tsconfig: exportsTsconfig,
+      tsconfigRaw: exportsTsconfigRaw,
       ...exports.esbuild,
     }
 
     const dtsOptions: Plugins['dts'] = {
-      tsconfig: exportsTsconfig,
+      tsconfig: exportsTsconfigPath,
       ...exports.dts,
     }
 
@@ -338,13 +351,14 @@ export async function createBuilder(
       ? bin.minify
       : isBoolean(config.minify) || args.minify
 
-    const binTsconfig = bin.tsconfig
-      ? bin.tsconfig
-      : config.tsconfig || args.tsconfig
+    let binTsconfigRaw = globalTsconfigRaw
+    if (bin.tsconfig) {
+      binTsconfigRaw = await getTsconfigRaw(rootDir, bin.tsconfig)
+    }
 
     const esbuildOptions: Plugins['esbuild'] = {
       minify: binMinify,
-      tsconfig: binTsconfig,
+      tsconfigRaw: binTsconfigRaw,
       ...bin.esbuild,
     }
 
@@ -465,18 +479,23 @@ export async function createBuilder(
         ? entry.minify
         : isBoolean(config.minify) || args.minify
 
-      const entryTsconfig = entry.tsconfig
+      const entryTsconfigPath = entry.tsconfig
         ? entry.tsconfig
         : config.tsconfig || args.tsconfig
 
+      let entryTsconfigRaw = globalTsconfigRaw
+      if (entry.tsconfig) {
+        entryTsconfigRaw = await getTsconfigRaw(rootDir, entry.tsconfig)
+      }
+
       const esbuildOptions: Plugins['esbuild'] = {
         minify: entryMinify,
-        tsconfig: entryTsconfig,
+        tsconfigRaw: entryTsconfigRaw,
         ...entry.esbuild,
       }
 
       const dtsOptions: Plugins['dts'] = {
-        tsconfig: entryTsconfig,
+        tsconfig: entryTsconfigPath,
         ...entry.dts,
       }
 
