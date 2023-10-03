@@ -34,35 +34,35 @@
   },
   "scripts": {
     "build": "tsx src/cli/index.ts",
-    "bump": "bummp",
     "lint": "ESLINT_USE_FLAT_CONFIG=true eslint -c .config/eslint.config.js .",
     "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint -c .config/eslint.config.js --fix .",
     "format": "prettier --config .config/prettier.config.js --write .",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@hypernym/args": "^0.1.0",
+    "@hypernym/utils": "^2.0.2",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.2.1",
     "@rollup/plugin-replace": "^5.0.2",
     "colorate": "^0.1.4",
-    "esbuild": "^0.19.3",
-    "mri": "^1.2.0",
-    "rollup": "^3.29.2",
-    "rollup-plugin-dts": "^6.0.2",
-    "utills": "^0.1.1"
+    "esbuild": "^0.19.4",
+    "rollup": "^3.29.4",
+    "rollup-plugin-dts": "^6.0.2"
   },
   "devDependencies": {
-    "@types/node": "^20.6.3",
-    "bummp": "^0.2.0",
-    "configshare": "^0.1.5",
-    "eslint": "^8.49.0",
+    "@hypernym/eslint-config": "^2.0.1",
+    "@hypernym/prettier-config": "^2.0.1",
+    "@hypernym/tsconfig": "^1.1.0",
+    "@types/node": "^20.8.2",
+    "eslint": "^8.50.0",
     "prettier": "^3.0.3",
-    "tsx": "^3.12.10",
-    "typescript": "^5.1.6"
+    "tsx": "^3.13.0",
+    "typescript": "^5.2.2"
   },
   "peerDependencies": {
     "@types/node": ">=20.0.0",
-    "typescript": ">=5.0.0 || <=5.1.6"
+    "typescript": ">=5.0.0"
   },
   "peerDependenciesMeta": {
     "@types/node": {
