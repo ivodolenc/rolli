@@ -1,6 +1,8 @@
-export interface ArgsOptions {
+export interface Args {
   _: string[]
-  c?: string
+  config?: string
+  help?: boolean
   minify?: boolean
   tsconfig?: string
+  ['print-config']?: boolean
 }
