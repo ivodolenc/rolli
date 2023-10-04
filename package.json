@@ -40,7 +40,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@hypernym/args": "^0.1.0",
+    "@hypernym/args": "^0.2.0",
     "@hypernym/utils": "^2.0.2",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.2.1",
