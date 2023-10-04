@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
-import mri from 'mri'
+import { createArgs } from '@hypernym/args'
 import { logHelpDetails } from './help.js'
 import { createBuilder } from './builder.js'
 import { createConfigLoader } from './loader.js'
 import { logger, error } from '../utils/index.js'
 import { nodePatch } from '../utils/node.js'
+import type { Args } from '../types/cli/index.js'
 
 async function main() {
   const rootDir = process.cwd()
-  const alias = { h: 'help', c: 'config' }
-  const args = mri(process.argv.splice(2), { alias })
+  const args = createArgs<Args>({ alias: { help: 'h', config: 'c' } })
 
-  if (args.h) return logHelpDetails()
+  if (args.help) return logHelpDetails()
 
   const config = await createConfigLoader(rootDir, args).catch(error)
   if (!config) return logger.notFound('Configuration not found.')

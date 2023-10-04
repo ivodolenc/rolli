@@ -1,4 +1,4 @@
-import { isString, isObject } from 'utills'
+import { isString, isObject } from '@hypernym/utils'
 import type { ExportsOptions } from '../types/exports.js'
 import type { BinOptions } from '../types/bin.js'
 import type { ConfigLoader } from '../types/cli/index.js'

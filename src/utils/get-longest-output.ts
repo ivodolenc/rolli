@@ -1,4 +1,4 @@
-import { isString, isObject } from 'utills'
+import { isString, isObject } from '@hypernym/utils'
 import { isPathAllowed } from './is-path-allowed.js'
 import type { ConfigLoader } from '../types/cli/loader.js'
 

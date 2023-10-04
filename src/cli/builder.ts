@@ -1,6 +1,6 @@
 import { resolve, parse } from 'node:path'
 import { stat } from 'node:fs/promises'
-import { isString, isObject, isBoolean, isArray } from 'utills'
+import { isString, isObject, isBoolean, isArray } from '@hypernym/utils'
 import { cl, lime, cyan, darken, pink } from 'colorate'
 import { rollup } from 'rollup'
 import { getLogFilter } from 'rollup/getLogFilter'
@@ -22,17 +22,13 @@ import {
 } from '../utils/index.js'
 import type { InputOptions, ModuleFormat, Plugin } from 'rollup'
 import type { Plugins } from '../types/plugins.js'
-import type {
-  ConfigLoader,
-  ArgsOptions,
-  OutputLogs,
-} from '../types/cli/index.js'
+import type { ConfigLoader, Args, OutputLogs } from '../types/cli/index.js'
 
 const replacePlugin = _replace.default ?? _replace
 const jsonPlugin = _json.default ?? _json
 const resolvePlugin = _resolve.default ?? _resolve
 
-let bundleStats = {
+const bundleStats = {
   start: 0,
   end: 0,
   size: 0,
@@ -81,7 +77,7 @@ async function logOutputStat(
 
 export async function createBuilder(
   rootDir: string,
-  args: ArgsOptions,
+  args: Args,
   config: ConfigLoader,
 ) {
   logger.start(config.type)

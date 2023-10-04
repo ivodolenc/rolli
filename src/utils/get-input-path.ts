@@ -1,5 +1,5 @@
 import { parse } from 'node:path'
-import { exists } from 'utills/node'
+import { exists } from '@hypernym/utils/node'
 
 export async function getInputPath(
   srcDir: string,
